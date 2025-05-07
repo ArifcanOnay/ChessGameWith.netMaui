@@ -1,0 +1,90 @@
+# .NET
+[Dd]ebug/
+[Dd]ebugPublic/
+[Dd]istro/
+[Dd]ist/
+[Dd]ebug-AnyCPU/
+[Dd]ebug-x86/
+[Dd]ebug-x64/
+[Dd]ebug-arm/
+[Dd]ebug-arm64/
+[Dd]ebug-wasm/
+[Dd]eploy/
+[Dd]eployment/
+[Dd]ebug/Publish/
+[Dd]ebug/Release/
+
+# User-specific files
+.idea/
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows Installer files
+*.appx
+*.appxbundle
+*.msix
+*.msixbundle
+
+# OS generated files
+Desktop.ini
+Thumbs.db
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ASP.NET Core
+wwwroot/
+dist/
+
+# JetBrains Rider
+.idea/
+
+# MAUI/Android/iOS Build directories
+bin/
+obj/
+platforms/
+www/
+
+# Visual Studio for Mac
+.vscode/
+
+# User secrets
+secrets/
+
+# .NET global tool installation location
+tools/
+
+# JetBrains Rider files
+.idea/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# User-specific files
+.vs2019/
+.vs2017/
+.idea/
+
+# JetBrains Rider files
+.idea/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp

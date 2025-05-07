@@ -1,0 +1,6 @@
+@SatrancApi_HostAddress = http://localhost:5021
+
+GET {{SatrancApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
