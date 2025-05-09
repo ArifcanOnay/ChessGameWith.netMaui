@@ -9,6 +9,8 @@ namespace SatrancApi
 
             // Add services to the container.
             builder.Services.AddAuthorization();
+            builder.Services.AddSwaggerGen();
+
 
             
 
@@ -17,6 +19,8 @@ namespace SatrancApi
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
+                app.UseSwagger();
+                app.UseSwaggerUI();
                
             }
 
