@@ -1,4 +1,5 @@
-﻿using SatrancAPI.Entities.Models;
+﻿using SatrancApi.Entities.HamlelerinYonleri.FilhamlesiYönleri;
+using SatrancAPI.Entities.Models;
 
 namespace SatrancAPI.Entities.HamleSınıfları
 {
@@ -6,7 +7,15 @@ namespace SatrancAPI.Entities.HamleSınıfları
     {
         public List<(int x, int y)> getGecerliHamleler(Tas tas, Tas[,] tahta)
         {
-            throw new NotImplementedException();
+            var hamleler = new List<(int x, int y)>();
+
+            // Fil için sadece çapraz hareket geçerlidir
+            if (CaprazHareket.GecerliMi(tas, tahta))
+            {
+                hamleler.AddRange(CaprazHareket.Hesapla(tas, tahta));
+            }
+
+            return hamleler;
         }
     }
 }
