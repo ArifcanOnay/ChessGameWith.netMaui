@@ -7,7 +7,7 @@ namespace SatrancAPI.Entities.HamleSınıfları
     {
         public List<(int x, int y)> getGecerliHamleler(Tas tas, Tas[,] tahta)
         {
-        {
+        
             var hamleler = new List<(int x, int y)>();
 
             // Önce geçerli hamle var mı kontrol ediyoruz
@@ -18,7 +18,7 @@ namespace SatrancAPI.Entities.HamleSınıfları
             }
 
             return hamleler;
-        }
+        
     }
     }
 }

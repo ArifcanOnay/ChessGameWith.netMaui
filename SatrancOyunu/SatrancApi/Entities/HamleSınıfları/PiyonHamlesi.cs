@@ -9,28 +9,29 @@ namespace SatrancAPI.Entities.HamleSınıfları
         public List<(int x, int y)> getGecerliHamleler(Tas tas, Tas[,] tahta)
         {
             var hamleler = new List<(int x, int y)>();
+            hamleler.AddRange(İleriHamle.Hesapla(tas, tahta));
             if (CaprazYeme.gecerliMi(tas, tahta))
             {
                 hamleler.AddRange(CaprazYeme.Hesapla(tas, tahta));
-                return hamleler;
+               
             }
+            
 
-            if (İlkHamledeCiftAdim.GecerliMi(tas, tahta))
+             if(İlkHamledeCiftAdim.GecerliMi(tas, tahta))
             {
                 hamleler.AddRange(İlkHamledeCiftAdim.Hesapla(tas, tahta));
-                return hamleler;
+                
             }
             if (PiyonTerfi.GecerliMi(tas, tahta))
             {
                 hamleler.AddRange(PiyonTerfi.Hesapla(tas, tahta));
-                return hamleler;
-
             }
-            
-
-
-            hamleler.AddRange(İleriHamle.Hesapla(tas, tahta));
+          
             return hamleler;
+
+
+
+
         }
     }
 }
