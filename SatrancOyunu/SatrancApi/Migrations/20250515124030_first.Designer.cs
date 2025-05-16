@@ -12,8 +12,8 @@ using SatrancAPI.Datas;
 namespace SatrancApi.Migrations
 {
     [DbContext(typeof(SatrancDbContext))]
-    [Migration("20250507103704_First")]
-    partial class First
+    [Migration("20250515124030_first")]
+    partial class first
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -52,6 +52,9 @@ namespace SatrancApi.Migrations
                     b.Property<Guid>("OyuncuId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("TasId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("turu")
                         .HasColumnType("int");
 
@@ -60,6 +63,8 @@ namespace SatrancApi.Migrations
                     b.HasIndex("OyunId");
 
                     b.HasIndex("OyuncuId");
+
+                    b.HasIndex("TasId");
 
                     b.ToTable("Hamleler");
                 });
@@ -71,6 +76,9 @@ namespace SatrancApi.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("BaslangicTarihi")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("BaslangicZamani")
                         .HasColumnType("datetime2");
 
                     b.Property<TimeSpan?>("BeyazKalanSure")
@@ -176,9 +184,17 @@ namespace SatrancApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SatrancAPI.Entities.Models.Tas", "Tas")
+                        .WithMany()
+                        .HasForeignKey("TasId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Oyun");
 
                     b.Navigation("Oyuncu");
+
+                    b.Navigation("Tas");
                 });
 
             modelBuilder.Entity("SatrancAPI.Entities.Models.Oyun", b =>

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SatrancApi.Migrations
 {
     /// <inheritdoc />
-    public partial class First : Migration
+    public partial class first : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -38,7 +38,8 @@ namespace SatrancApi.Migrations
                     SiyahSkor = table.Column<int>(type: "int", nullable: false),
                     BeyazKalanSure = table.Column<TimeSpan>(type: "time", nullable: true),
                     SiyahKalanSure = table.Column<TimeSpan>(type: "time", nullable: true),
-                    Durum = table.Column<int>(type: "int", nullable: true)
+                    Durum = table.Column<int>(type: "int", nullable: true),
+                    BaslangicZamani = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -55,37 +56,6 @@ namespace SatrancApi.Migrations
                         principalTable: "Oyuncular",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Hamleler",
-                columns: table => new
-                {
-                    HamleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    OyunId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    OyuncuId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    turu = table.Column<int>(type: "int", nullable: false),
-                    BaslangicX = table.Column<int>(type: "int", nullable: false),
-                    BaslangicY = table.Column<int>(type: "int", nullable: false),
-                    HedefX = table.Column<int>(type: "int", nullable: false),
-                    HedefY = table.Column<int>(type: "int", nullable: false),
-                    HamleTarihi = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Hamleler", x => x.HamleId);
-                    table.ForeignKey(
-                        name: "FK_Hamleler_Oyuncular_OyuncuId",
-                        column: x => x.OyuncuId,
-                        principalTable: "Oyuncular",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Hamleler_Oyunlar_OyunId",
-                        column: x => x.OyunId,
-                        principalTable: "Oyunlar",
-                        principalColumn: "OyunId",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -118,6 +88,44 @@ namespace SatrancApi.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Hamleler",
+                columns: table => new
+                {
+                    HamleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OyunId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OyuncuId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TasId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    turu = table.Column<int>(type: "int", nullable: false),
+                    BaslangicX = table.Column<int>(type: "int", nullable: false),
+                    BaslangicY = table.Column<int>(type: "int", nullable: false),
+                    HedefX = table.Column<int>(type: "int", nullable: false),
+                    HedefY = table.Column<int>(type: "int", nullable: false),
+                    HamleTarihi = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Hamleler", x => x.HamleId);
+                    table.ForeignKey(
+                        name: "FK_Hamleler_Oyuncular_OyuncuId",
+                        column: x => x.OyuncuId,
+                        principalTable: "Oyuncular",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Hamleler_Oyunlar_OyunId",
+                        column: x => x.OyunId,
+                        principalTable: "Oyunlar",
+                        principalColumn: "OyunId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Hamleler_Taslar_TasId",
+                        column: x => x.TasId,
+                        principalTable: "Taslar",
+                        principalColumn: "TasId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Hamleler_OyuncuId",
                 table: "Hamleler",
@@ -127,6 +135,11 @@ namespace SatrancApi.Migrations
                 name: "IX_Hamleler_OyunId",
                 table: "Hamleler",
                 column: "OyunId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Hamleler_TasId",
+                table: "Hamleler",
+                column: "TasId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Oyunlar_BeyazOyuncuId",

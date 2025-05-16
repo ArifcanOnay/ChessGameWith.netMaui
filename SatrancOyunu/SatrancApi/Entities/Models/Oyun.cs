@@ -16,5 +16,6 @@
         public Oyuncu ?SiyahOyuncu { get; set; }
         public ICollection<Hamle>? Hamleler { get; set; }  // Oyun ile birden fazla hamle ilişkisi
         public ICollection<Tas> ?Taslar { get; set; }  // Oyun ile birden fazla taş ilişkisi
+        public DateTime BaslangicZamani { get; internal set; }
     }
 }
