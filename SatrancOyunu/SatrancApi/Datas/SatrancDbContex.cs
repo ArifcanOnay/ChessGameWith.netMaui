@@ -5,17 +5,25 @@ using SatrancAPI.Entities.Models;
 
 namespace SatrancAPI.Datas
 {
-    public class SatrancDbContext:DbContext
+    public class SatrancDbContext : DbContext
     {
-       public DbSet<Oyun> Oyunlar { get; set; }
-       public DbSet<Oyuncu> Oyuncular { get; set; }
-        public DbSet<Tas>Taslar { get; set; }
-        public DbSet<Hamle>Hamleler { get; set; }
+        public SatrancDbContext(DbContextOptions<SatrancDbContext> options)
+           : base(options)
+        {
+        }
+        public DbSet<Oyun> Oyunlar { get; set; }
+        public DbSet<Oyuncu> Oyuncular { get; set; }
+        public DbSet<Tas> Taslar { get; set; }
+        public DbSet<Hamle> Hamleler { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=CAN\\SQLEXPRESS01;Database=SatrançTakipDB;User Id=sa;Password=1;TrustServerCertificate=True;");
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer("Server=CAN\\SQLEXPRESS01;Database=SatrançTakipDB;User Id=sa;Password=1;TrustServerCertificate=True;");
+            }
         }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -60,11 +68,12 @@ namespace SatrancAPI.Datas
                 .WithMany(o => o.Taslar)  // Oyuncu sınıfında ICollection<Tas> var
                 .HasForeignKey(t => t.OyuncuId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Hamle>()
+       .HasOne(h => h.Tas)  // h.Tas navigation property kullanın
+       .WithMany()          // Eğer Tas sınıfında Hamleler koleksiyonu yoksa WithMany()
+       .HasForeignKey(h => h.TasId)  // h.TasId foreign key kullanın
+       .OnDelete(DeleteBehavior.Restrict);
         }
-
-
-
-
-
     }
 }
