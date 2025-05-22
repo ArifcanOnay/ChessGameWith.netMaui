@@ -1,4 +1,3 @@
-
 using Microsoft.EntityFrameworkCore;
 using SatrancAPI.Datas;
 using SatrancAPI.Entities.Models;
@@ -7,7 +6,7 @@ using SatrancAPI.Services;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAuthorization();
 
-// CORS politikası ekleme (frontend ile iletişim için)
+// CORS politikasÄ± ekleme (frontend ile iletiÅŸim iÃ§in)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -18,7 +17,7 @@ builder.Services.AddCors(options =>
 
 // DbContext'i servis olarak ekleme
 builder.Services.AddDbContext<SatrancDbContext>(options =>
-    options.UseSqlServer("Server=CAN\\SQLEXPRESS01;Database=SatrançTakipDB;User Id=sa;Password=1;TrustServerCertificate=True;"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("SatrancDb")));
 
 // Servisler ekleme
 builder.Services.AddScoped<TahtaYoneticisi>();
@@ -30,15 +29,22 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
-        Title = "Satranç API",
+        Title = "Satranï¿½ API",
         Version = "v1",
-        Description = "Satranç oyunu için API"
+        Description = "Satranï¿½ oyunu iï¿½in API"
     });
+});
+
+// JSON dÃ¶ngÃ¼ hatalarÄ±nÄ± Ã¶nlemek iÃ§in System.Text.Json ayarlarÄ±nÄ± ekle
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+{
+    options.SerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    options.SerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
 });
 
 var app = builder.Build();
 
-// CORS politikasını etkinleştir
+// CORS politikasï¿½nï¿½ etkinleï¿½tir
 app.UseCors("AllowAll");
 
 // Swagger UI
@@ -53,7 +59,7 @@ app.UseAuthorization();
 
 // API endpoint'leri
 
-// 1. Tüm oyunları getir
+// 1. Tï¿½m oyunlarï¿½ getir
 app.MapGet("/api/oyunlar", async (SatrancDbContext db) =>
 {
     var oyunlar = await db.Oyunlar
@@ -63,7 +69,7 @@ app.MapGet("/api/oyunlar", async (SatrancDbContext db) =>
     return Results.Ok(oyunlar);
 });
 
-// 2. ID'ye göre oyunu getir
+// 2. ID'ye gï¿½re oyunu getir
 app.MapGet("/api/oyunlar/{id}", async (Guid id, SatrancDbContext db) =>
 {
     var oyun = await db.Oyunlar
@@ -78,7 +84,7 @@ app.MapGet("/api/oyunlar/{id}", async (Guid id, SatrancDbContext db) =>
     return Results.Ok(oyun);
 });
 
-// 3. Yeni oyun oluştur
+// 3. Yeni oyun oluï¿½tur
 app.MapPost("/api/oyunlar", async (OyunOlusturRequest request, OyunYoneticisi oyunYoneticisi) =>
 {
     try
@@ -92,7 +98,7 @@ app.MapPost("/api/oyunlar", async (OyunOlusturRequest request, OyunYoneticisi oy
     }
 });
 
-// 4. Bir oyundaki tüm taşları getir
+// 4. Bir oyundaki tï¿½m taï¿½larï¿½ getir
 app.MapGet("/api/oyunlar/{oyunId}/taslar", async (Guid oyunId, SatrancDbContext db) =>
 {
     var taslar = await db.Taslar
@@ -102,7 +108,7 @@ app.MapGet("/api/oyunlar/{oyunId}/taslar", async (Guid oyunId, SatrancDbContext 
     return Results.Ok(taslar);
 });
 
-// 5. Bir taşın geçerli hamlelerini getir
+// 5. Bir taï¿½ï¿½n geï¿½erli hamlelerini getir
 app.MapGet("/api/oyunlar/{oyunId}/taslar/{tasId}/gecerli-hamleler", async (Guid oyunId, Guid tasId, OyunYoneticisi oyunYoneticisi) =>
 {
     try
@@ -123,9 +129,9 @@ app.MapPost("/api/oyunlar/{oyunId}/hamleler", async (Guid oyunId, HamleRequest r
     {
         var basarili = await oyunYoneticisi.HamleYap(oyunId, request.TasId, request.HedefX, request.HedefY);
         if (basarili)
-            return Results.Ok(new { message = "Hamle başarıyla yapıldı" });
+            return Results.Ok(new { message = "Hamle baï¿½arï¿½yla yapï¿½ldï¿½" });
         else
-            return Results.BadRequest("Geçersiz hamle");
+            return Results.BadRequest("Geï¿½ersiz hamle");
     }
     catch (Exception ex)
     {
@@ -144,30 +150,37 @@ app.MapGet("/api/oyunlar/{oyunId}/hamleler", async (Guid oyunId, SatrancDbContex
     return Results.Ok(hamleler);
 });
 
-// 8. Yeni oyuncu oluştur
-app.MapPost("/api/oyuncular", async (Oyuncu oyuncu, SatrancDbContext db) =>
+// 8. Yeni oyuncu oluï¿½tur
+app.MapPost("/api/oyuncular", async (OyuncuOlusturRequest request, SatrancDbContext db) =>
 {
-    oyuncu.Id = Guid.NewGuid();
+    var oyuncu = new Oyuncu
+    {
+        Id = Guid.NewGuid(),
+        isim = request.isim,
+        email = request.email,
+        renk = request.renk
+    };
     db.Oyuncular.Add(oyuncu);
     await db.SaveChangesAsync();
     return Results.Created($"/api/oyuncular/{oyuncu.Id}", oyuncu);
 });
 
-// 9. Tüm oyuncuları getir
+// 9. Tï¿½m oyuncularï¿½ getir
 app.MapGet("/api/oyuncular", async (SatrancDbContext db) =>
 {
     var oyuncular = await db.Oyuncular.ToListAsync();
     return Results.Ok(oyuncular);
 });
-// Oyuncu güncelleme
-app.MapPut("/api/oyuncular/{id}", async (Guid id, Oyuncu oyuncu, SatrancDbContext db) =>
+// Oyuncu gï¿½ncelleme
+app.MapPut("/api/oyuncular/{id}", async (Guid id, OyuncuOlusturRequest request, SatrancDbContext db) =>
 {
     var mevcutOyuncu = await db.Oyuncular.FindAsync(id);
     if (mevcutOyuncu == null) return Results.NotFound();
 
-    mevcutOyuncu.isim = oyuncu.isim;
-    mevcutOyuncu.email = oyuncu.email;
-    // Diğer alanlar...
+    mevcutOyuncu.isim = request.isim;
+    mevcutOyuncu.email = request.email;
+    mevcutOyuncu.renk = request.renk;
+    // DiÄŸer alanlar gÃ¼ncellenmiyor
 
     await db.SaveChangesAsync();
     return Results.NoContent();
@@ -184,9 +197,70 @@ app.MapDelete("/api/oyuncular/{id}", async (Guid id, SatrancDbContext db) =>
     return Results.NoContent();
 });
 
+// 10. Oyun durumunu getir (ÅŸah Ã§ekme, ÅŸah mat, vb.)
+app.MapGet("/api/oyunlar/{oyunId}/durum", async (Guid oyunId, OyunYoneticisi oyunYoneticisi, SatrancDbContext db) =>
+{
+    var oyun = await db.Oyunlar.FindAsync(oyunId);
+    if (oyun == null)
+        return Results.NotFound();
+    
+    await oyunYoneticisi.TahtayiYukle(oyunId);
+    
+    // Son hamleyi al
+    var sonHamle = await db.Hamleler
+        .Where(h => h.OyunId == oyunId)
+        .OrderByDescending(h => h.HamleTarihi)
+        .FirstOrDefaultAsync();
+    
+    // SÄ±radaki oyuncuyu belirle
+    bool beyazSirasi = sonHamle == null || sonHamle.OyuncuId == oyun.SiyahOyuncuId;
+    Renk siradakiRenk = beyazSirasi ? Renk.Beyaz : Renk.Siyah;
+    
+    // Åah Ã§ekme durumu
+    bool beyazSahTehdit = oyunYoneticisi.SahTehditAltindaMi(Renk.Beyaz);
+    bool siyahSahTehdit = oyunYoneticisi.SahTehditAltindaMi(Renk.Siyah);
+    
+    // Åah mat durumu
+    bool beyazSahMat = beyazSahTehdit && oyunYoneticisi.SahMatMi(Renk.Beyaz);
+    bool siyahSahMat = siyahSahTehdit && oyunYoneticisi.SahMatMi(Renk.Siyah);
+    
+    return Results.Ok(new
+    {
+        Durum = oyun.Durum,
+        SiradakiOyuncuRengi = siradakiRenk,
+        BeyazSahTehditAltinda = beyazSahTehdit, 
+        SiyahSahTehditAltinda = siyahSahTehdit,
+        BeyazSahMat = beyazSahMat,
+        SiyahSahMat = siyahSahMat,
+        OyunBittiMi = oyun.Durum != Durum.Oynaniyor
+    });
+});
+
+// 11. Piyon terfi etme (Promotion)
+app.MapPost("/api/oyunlar/{oyunId}/piyon-terfi", async (Guid oyunId, PiyonTerfiRequest request, SatrancDbContext db) =>
+{
+    // TaÅŸÄ±n var olduÄŸunu ve piyon olduÄŸunu kontrol et
+    var tas = await db.Taslar.FirstOrDefaultAsync(t => t.TasId == request.PiyonId && t.AktifMi);
+    if (tas == null || tas.turu != TasTuru.Piyon)
+        return Results.BadRequest("GeÃ§ersiz piyon");
+    
+    // Piyonun terfi hattÄ±nda olduÄŸunu kontrol et (beyaz iÃ§in 0, siyah iÃ§in 7)
+    bool terfiPozisyonundaMi = (tas.renk == Renk.Beyaz && tas.X == 0) || (tas.renk == Renk.Siyah && tas.X == 7);
+    if (!terfiPozisyonundaMi)
+        return Results.BadRequest("Piyon terfi pozisyonunda deÄŸil");
+    
+    // Piyonu istenen tÃ¼re yÃ¼kselt
+    tas.turu = request.YeniTasTuru;
+    
+    await db.SaveChangesAsync();
+    return Results.Ok(new { message = "Piyon baÅŸarÄ±yla terfi edildi", tas = tas });
+});
+
 
 app.Run();
 
-// API istekleri için basit sınıflar (DTO yerine record kullanıyoruz)
+// API istekleri iÃ§in basit sÄ±nÄ±flar (DTO)
 public record OyunOlusturRequest(Guid BeyazOyuncuId, Guid SiyahOyuncuId);
 public record HamleRequest(Guid TasId, int HedefX, int HedefY);
+public record OyuncuOlusturRequest(string isim, string email, Renk renk);
+public record PiyonTerfiRequest(Guid PiyonId, TasTuru YeniTasTuru);

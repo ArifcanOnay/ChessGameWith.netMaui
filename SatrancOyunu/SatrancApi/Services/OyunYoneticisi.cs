@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SatrancAPI.Datas;
+using SatrancAPI.Entities.HamleSınıfları;
 using SatrancAPI.Entities.Models;
 
 namespace SatrancAPI.Services
@@ -111,20 +112,16 @@ namespace SatrancAPI.Services
 
             _tahtaYoneticisi.TahtayiOlustur(taslar);
             return _tahtaYoneticisi.TahtayiGetir();
-        }
-
-        // Bir taşın geçerli hamlelerini getirir
-        public async Task<List<(int x, int y)>> GecerliHamleleriGetir(Guid oyunId, Guid tasId)
+        }        // Şah tehdit durumunu kontrol et
+        public bool SahTehditAltindaMi(Renk sahRengi)
         {
-            await TahtayiYukle(oyunId);
-
-            var tas = await _dbContext.Taslar
-                .FirstOrDefaultAsync(t => t.TasId == tasId && t.AktifMi);
-
-            if (tas == null)
-                return new List<(int x, int y)>();
-
-            return _tahtaYoneticisi.GecerliHamleleriGetir(tas);
+            return _tahtaYoneticisi.SahTehditAltindaMi(sahRengi);
+        }
+        
+        // Şah mat durumunu kontrol et
+        public bool SahMatMi(Renk sahRengi)
+        {
+            return _tahtaYoneticisi.SahMatMi(sahRengi);
         }
 
         // Hamle yapar
@@ -188,14 +185,45 @@ namespace SatrancAPI.Services
                 HamleTarihi = DateTime.Now
             };
 
-            _dbContext.Hamleler.Add(hamle);
-
-            // Şah tehdit kontrolü
+            _dbContext.Hamleler.Add(hamle);            // Hamle sonrası kontroller
             Renk rakipRenk = tas.renk == Renk.Beyaz ? Renk.Siyah : Renk.Beyaz;
             bool sahTehditAltinda = _tahtaYoneticisi.SahTehditAltindaMi(rakipRenk);
-
+            bool sahMat = _tahtaYoneticisi.SahMatMi(rakipRenk);
+            
+            // Şah mat durumunu kontrol et
+            if (sahMat)
+            {
+                // Oyunu bitir ve kazananı belirle
+                oyun.Durum = Durum.Bitiyor;
+                oyun.BitisTarihi = DateTime.Now;
+                
+                // Kazanan oyuncunun skorunu artır
+                if (tas.renk == Renk.Beyaz)
+                {
+                    oyun.BeyazSkor += 1;
+                }
+                else
+                {
+                    oyun.SiyahSkor += 1;
+                }
+            }
+            
             await _dbContext.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<List<(int X, int Y)>> GecerliHamleleriGetir(Guid oyunId, Guid tasId)
+        {
+            // Tahtayı yükle
+            await TahtayiYukle(oyunId);
+            var tas = await _dbContext.Taslar.FirstOrDefaultAsync(t => t.TasId == tasId && t.AktifMi);
+            if (tas == null)
+                return new List<(int, int)>();
+            // HamleFactory ile taşın geçerli hamlelerini bul
+            var hamleSinifi = HamleFactory.HamleSinifiGetir(tas.turu);
+            var tahta = _tahtaYoneticisi.TahtayiGetir();
+            var hamleler = hamleSinifi.getGecerliHamleler(tas, tahta);
+            return hamleler;
         }
     }
 }

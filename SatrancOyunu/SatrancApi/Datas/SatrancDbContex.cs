@@ -14,14 +14,10 @@ namespace SatrancAPI.Datas
         public DbSet<Oyun> Oyunlar { get; set; }
         public DbSet<Oyuncu> Oyuncular { get; set; }
         public DbSet<Tas> Taslar { get; set; }
-        public DbSet<Hamle> Hamleler { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public DbSet<Hamle> Hamleler { get; set; }        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer("Server=CAN\\SQLEXPRESS01;Database=SatrançTakipDB;User Id=sa;Password=1;TrustServerCertificate=True;");
-            }
+            // ConfigurationBuilder kullanıldığında burada ek yapılandırma yapılabilir
+            // Ancak Program.cs'de zaten DbContext servis olarak eklenmiştir
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
