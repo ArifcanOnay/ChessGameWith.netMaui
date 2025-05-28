@@ -39,7 +39,11 @@ namespace SatrancApi.Migrations
                     BeyazKalanSure = table.Column<TimeSpan>(type: "time", nullable: true),
                     SiyahKalanSure = table.Column<TimeSpan>(type: "time", nullable: true),
                     Durum = table.Column<int>(type: "int", nullable: true),
-                    BaslangicZamani = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    SiraKimin = table.Column<int>(type: "int", nullable: false),
+                    ToplamHamleSayisi = table.Column<int>(type: "int", nullable: false),
+                    SahDurumu = table.Column<bool>(type: "bit", nullable: false),
+                    KazananOyuncu = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BitisNedeni = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -69,7 +73,10 @@ namespace SatrancApi.Migrations
                     turu = table.Column<int>(type: "int", nullable: false),
                     X = table.Column<int>(type: "int", nullable: false),
                     Y = table.Column<int>(type: "int", nullable: false),
-                    AktifMi = table.Column<bool>(type: "bit", nullable: false)
+                    AktifMi = table.Column<bool>(type: "bit", nullable: false),
+                    HicHareketEtmediMi = table.Column<bool>(type: "bit", nullable: false),
+                    SonHareketTarihi = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    EnPassantTuru = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -85,7 +92,7 @@ namespace SatrancApi.Migrations
                         column: x => x.OyunId,
                         principalTable: "Oyunlar",
                         principalColumn: "OyunId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -101,6 +108,13 @@ namespace SatrancApi.Migrations
                     BaslangicY = table.Column<int>(type: "int", nullable: false),
                     HedefX = table.Column<int>(type: "int", nullable: false),
                     HedefY = table.Column<int>(type: "int", nullable: false),
+                    RokMu = table.Column<bool>(type: "bit", nullable: false),
+                    EnPassantMi = table.Column<bool>(type: "bit", nullable: false),
+                    TerfiEdildigiTas = table.Column<int>(type: "int", nullable: true),
+                    SahMi = table.Column<bool>(type: "bit", nullable: false),
+                    SahMatMi = table.Column<bool>(type: "bit", nullable: false),
+                    Notasyon = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    YenilenTasId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     HamleTarihi = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -111,7 +125,7 @@ namespace SatrancApi.Migrations
                         column: x => x.OyuncuId,
                         principalTable: "Oyuncular",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Hamleler_Oyunlar_OyunId",
                         column: x => x.OyunId,
@@ -127,14 +141,14 @@ namespace SatrancApi.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Hamle_OyunId_Tarih",
+                table: "Hamleler",
+                columns: new[] { "OyunId", "HamleTarihi" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Hamleler_OyuncuId",
                 table: "Hamleler",
                 column: "OyuncuId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Hamleler_OyunId",
-                table: "Hamleler",
-                column: "OyunId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Hamleler_TasId",
@@ -152,14 +166,14 @@ namespace SatrancApi.Migrations
                 column: "SiyahOyuncuId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Tas_OyunId_Aktif",
+                table: "Taslar",
+                columns: new[] { "OyunId", "AktifMi" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Taslar_OyuncuId",
                 table: "Taslar",
                 column: "OyuncuId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Taslar_OyunId",
-                table: "Taslar",
-                column: "OyunId");
         }
 
         /// <inheritdoc />

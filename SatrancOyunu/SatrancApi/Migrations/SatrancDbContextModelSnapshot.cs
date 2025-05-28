@@ -34,6 +34,9 @@ namespace SatrancApi.Migrations
                     b.Property<int>("BaslangicY")
                         .HasColumnType("int");
 
+                    b.Property<bool>("EnPassantMi")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("HamleTarihi")
                         .HasColumnType("datetime2");
 
@@ -43,13 +46,31 @@ namespace SatrancApi.Migrations
                     b.Property<int>("HedefY")
                         .HasColumnType("int");
 
+                    b.Property<string>("Notasyon")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("OyunId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("OyuncuId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool>("RokMu")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("SahMatMi")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("SahMi")
+                        .HasColumnType("bit");
+
                     b.Property<Guid>("TasId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("TerfiEdildigiTas")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("YenilenTasId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("turu")
@@ -57,11 +78,12 @@ namespace SatrancApi.Migrations
 
                     b.HasKey("HamleId");
 
-                    b.HasIndex("OyunId");
-
                     b.HasIndex("OyuncuId");
 
                     b.HasIndex("TasId");
+
+                    b.HasIndex("OyunId", "HamleTarihi")
+                        .HasDatabaseName("IX_Hamle_OyunId_Tarih");
 
                     b.ToTable("Hamleler");
                 });
@@ -75,9 +97,6 @@ namespace SatrancApi.Migrations
                     b.Property<DateTime>("BaslangicTarihi")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("BaslangicZamani")
-                        .HasColumnType("datetime2");
-
                     b.Property<TimeSpan?>("BeyazKalanSure")
                         .HasColumnType("time");
 
@@ -87,10 +106,22 @@ namespace SatrancApi.Migrations
                     b.Property<int>("BeyazSkor")
                         .HasColumnType("int");
 
+                    b.Property<string>("BitisNedeni")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("BitisTarihi")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("Durum")
+                        .HasColumnType("int");
+
+                    b.Property<string>("KazananOyuncu")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("SahDurumu")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SiraKimin")
                         .HasColumnType("int");
 
                     b.Property<TimeSpan?>("SiyahKalanSure")
@@ -100,6 +131,9 @@ namespace SatrancApi.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("SiyahSkor")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ToplamHamleSayisi")
                         .HasColumnType("int");
 
                     b.HasKey("OyunId");
@@ -140,11 +174,20 @@ namespace SatrancApi.Migrations
                     b.Property<bool>("AktifMi")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("EnPassantTuru")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("HicHareketEtmediMi")
+                        .HasColumnType("bit");
+
                     b.Property<Guid>("OyunId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("OyuncuId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("SonHareketTarihi")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("X")
                         .HasColumnType("int");
@@ -160,9 +203,10 @@ namespace SatrancApi.Migrations
 
                     b.HasKey("TasId");
 
-                    b.HasIndex("OyunId");
-
                     b.HasIndex("OyuncuId");
+
+                    b.HasIndex("OyunId", "AktifMi")
+                        .HasDatabaseName("IX_Tas_OyunId_Aktif");
 
                     b.ToTable("Taslar");
                 });
@@ -178,11 +222,11 @@ namespace SatrancApi.Migrations
                     b.HasOne("SatrancAPI.Entities.Models.Oyuncu", "Oyuncu")
                         .WithMany("Hamleler")
                         .HasForeignKey("OyuncuId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SatrancAPI.Entities.Models.Tas", "Tas")
-                        .WithMany()
+                        .WithMany("Hamleler")
                         .HasForeignKey("TasId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -218,7 +262,7 @@ namespace SatrancApi.Migrations
                     b.HasOne("SatrancAPI.Entities.Models.Oyun", "Oyun")
                         .WithMany("Taslar")
                         .HasForeignKey("OyunId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SatrancAPI.Entities.Models.Oyuncu", "Oyuncu")
@@ -244,6 +288,11 @@ namespace SatrancApi.Migrations
                     b.Navigation("Hamleler");
 
                     b.Navigation("Taslar");
+                });
+
+            modelBuilder.Entity("SatrancAPI.Entities.Models.Tas", b =>
+                {
+                    b.Navigation("Hamleler");
                 });
 #pragma warning restore 612, 618
         }

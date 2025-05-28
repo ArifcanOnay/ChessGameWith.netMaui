@@ -11,6 +11,14 @@
         public int BaslangicY { get; set; }
         public int HedefX { get; set; }
         public int HedefY { get; set; }
+        public bool RokMu { get; set; } = false;
+        public bool EnPassantMi { get; set; } = false;
+        public TasTuru? TerfiEdildigiTas { get; set; } // Piyon terfi
+        public bool SahMi { get; set; } = false;
+        public bool SahMatMi { get; set; } = false;
+        public string? Notasyon { get; set; } // "e2-e4", "O-O" gibi
+        public Guid? YenilenTasId { get; set; } // Rakip taş yenmesi
+
         public DateTime HamleTarihi { get; set; }
         public Oyun ?Oyun { get; set; }
         public Oyuncu ?Oyuncu { get; set; }

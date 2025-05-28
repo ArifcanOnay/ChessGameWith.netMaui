@@ -17,7 +17,7 @@ builder.Services.AddCors(options =>
 
 // DbContext'i servis olarak ekleme
 builder.Services.AddDbContext<SatrancDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("SatrancDb")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Servisler ekleme
 builder.Services.AddScoped<TahtaYoneticisi>();
@@ -33,13 +33,6 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1",
         Description = "Satran� oyunu i�in API"
     });
-});
-
-// JSON döngü hatalarını önlemek için System.Text.Json ayarlarını ekle
-builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
-{
-    options.SerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-    options.SerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
 });
 
 var app = builder.Build();
