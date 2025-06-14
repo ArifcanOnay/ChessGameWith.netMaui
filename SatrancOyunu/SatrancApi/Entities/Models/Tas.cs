@@ -11,8 +11,7 @@
 
         public int Y { get; set; }
         public bool AktifMi { get; set; }
-        // Navigation properties
-        // ➕ ÖNERİLEN EK ALANLAR:
+   
         public bool HicHareketEtmediMi { get; set; } = true; // Rök ve en passant için
         public DateTime? SonHareketTarihi { get; set; }
         public int? EnPassantTuru { get; set; } // Hangi turda en passant oldu

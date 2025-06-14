@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="SatranOyunumApp.Views.KullanıcıKaydi"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Kullanıcı Kaydı"
+             Shell.NavBarIsVisible="False">
+
+    <Grid>
+        <!-- Arka plan resmi (Magnus Carlsen) -->
+        <Image Source="https://i.guim.co.uk/img/media/699cce4914b90ae0ba89787178bc48314d50eb89/0_84_5081_3223/master/5081.jpg?width=1900&amp;dpr=2&amp;s=none&amp;crop=none"
+               Aspect="AspectFill" />
+
+        <!-- *** DEĞİŞTİRİLEN: Koyu overlay şeffaflığı 0.6'dan 0.3'e düşürüldü *** -->
+        <BoxView Color="Black" Opacity="0.3" />
+
+        <!-- Kayıt formu -->
+        <ScrollView VerticalOptions="Center" Padding="40,20">
+            <StackLayout Spacing="20">
+
+                <!-- Kayıt formu -->
+                <!-- *** DEĞİŞTİRİLEN: Frame şeffaflığı azaltıldı *** -->
+                <Frame BackgroundColor="#1a1a1a" 
+                       Opacity="0.85"
+                       CornerRadius="20" 
+                       Padding="30,40"
+                       HasShadow="True">
+                    <StackLayout Spacing="25">
+
+                        <!-- Başlık -->
+                        <Label Text="♔ SATRANÇ OYUNU ♔" 
+                               FontSize="28" 
+                               FontAttributes="Bold"
+                               TextColor="Gold"
+                               HorizontalOptions="Center" />
+
+                        <Label Text="Kayıt Ol" 
+                               FontSize="20" 
+                               TextColor="White"
+                               HorizontalOptions="Center"
+                               Margin="0,0,0,20" />
+
+                        <!-- Kullanıcı Adı -->
+                        <StackLayout Spacing="8">
+                            <Label Text="Kullanıcı Adı" TextColor="LightGray" FontSize="14" />
+                            <Frame BorderColor="Gold" 
+                                   BackgroundColor="#2a2a2a" 
+                                   Opacity="0.9"
+                                   CornerRadius="10" 
+                                   Padding="0" 
+                                   HasShadow="False">
+                                <Entry x:Name="KullaniciAdiEntry" 
+                                       Placeholder="Kullanıcı adınızı girin"
+                                       PlaceholderColor="Gray"
+                                       TextColor="White"
+                                       BackgroundColor="Transparent"
+                                       Margin="15,10" />
+                            </Frame>
+                        </StackLayout>
+
+                        <!-- Email -->
+                        <StackLayout Spacing="8">
+                            <Label Text="Email" TextColor="LightGray" FontSize="14" />
+                            <Frame BorderColor="Gold" 
+                                   BackgroundColor="#2a2a2a" 
+                                   Opacity="0.9"
+                                   CornerRadius="10" 
+                                   Padding="0" 
+                                   HasShadow="False">
+                                <Entry x:Name="EmailEntry" 
+                                       Placeholder="Email adresinizi girin"
+                                       PlaceholderColor="Gray"
+                                       TextColor="White"
+                                       BackgroundColor="Transparent"
+                                       Keyboard="Email"
+                                       Margin="15,10" />
+                            </Frame>
+                        </StackLayout>
+
+                        <!-- Şifre -->
+                        <StackLayout Spacing="8">
+                            <Label Text="Şifre" TextColor="LightGray" FontSize="14" />
+                            <Frame BorderColor="Gold" 
+                                   BackgroundColor="#2a2a2a" 
+                                   Opacity="0.9"
+                                   CornerRadius="10" 
+                                   Padding="0" 
+                                   HasShadow="False">
+                                <Entry x:Name="SifreEntry" 
+                                       Placeholder="Şifrenizi girin"
+                                       PlaceholderColor="Gray"
+                                       TextColor="White"
+                                       BackgroundColor="Transparent"
+                                       IsPassword="True"
+                                       Margin="15,10" />
+                            </Frame>
+                        </StackLayout>
+
+                        <!-- Kayıt Ol Butonu -->
+                        <Button Text="KAYIT OL" 
+                                BackgroundColor="Gold"
+                                TextColor="Black"
+                                FontAttributes="Bold"
+                                FontSize="16"
+                                CornerRadius="10"
+                                HeightRequest="50"
+                                Clicked="OnKayitOlClicked"
+                                Margin="0,10,0,0" />
+
+                    </StackLayout>
+                </Frame>
+
+            </StackLayout>
+        </ScrollView>
+    </Grid>
+
+</ContentPage>

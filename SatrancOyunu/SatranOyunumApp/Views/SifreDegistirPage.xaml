@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="SatranOyunumApp.Views.SifreDegistirPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Şifre Değiştir"
+             Shell.NavBarIsVisible="False">
+
+    <Grid>
+        <!-- Arka plan resmi (aynı Magnus Carlsen resmi) -->
+        <Image Source="https://i.guim.co.uk/img/media/699cce4914b90ae0ba89787178bc48314d50eb89/0_84_5081_3223/master/5081.jpg?width=1900&amp;dpr=2&amp;s=none&amp;crop=none"
+               Aspect="AspectFill" />
+
+        <!-- Koyu overlay -->
+        <BoxView Color="Black" Opacity="0.4" />
+
+        <!-- Şifre değiştirme formu -->
+        <ScrollView VerticalOptions="Center" Padding="40,20">
+            <StackLayout Spacing="20">
+
+                <!-- Form -->
+                <Frame BackgroundColor="#1a1a1a" 
+                       Opacity="0.9"
+                       CornerRadius="20" 
+                       Padding="30,40"
+                       HasShadow="True">
+                    <StackLayout Spacing="25">
+
+                        <!-- Başlık -->
+                        <Label Text="🔐 ŞİFRE DEĞİŞTİR 🔐" 
+                               FontSize="26" 
+                               FontAttributes="Bold"
+                               TextColor="Gold"
+                               HorizontalOptions="Center" />
+
+                        <Label Text="Güvenliğiniz için şifrenizi değiştirin" 
+                               FontSize="16" 
+                               TextColor="LightGray"
+                               HorizontalOptions="Center"
+                               Margin="0,0,0,20" />
+
+                        <!-- Email -->
+                        <StackLayout Spacing="8">
+                            <Label Text="Email Adresiniz" TextColor="LightGray" FontSize="14" />
+                            <Frame BorderColor="Gold" 
+                                   BackgroundColor="#2a2a2a" 
+                                   Opacity="0.9"
+                                   CornerRadius="10" 
+                                   Padding="0" 
+                                   HasShadow="False">
+                                <Entry x:Name="EmailEntry" 
+                                       Placeholder="Email adresinizi girin"
+                                       PlaceholderColor="Gray"
+                                       TextColor="White"
+                                       BackgroundColor="Transparent"
+                                       Keyboard="Email"
+                                       Margin="15,10" />
+                            </Frame>
+                        </StackLayout>
+
+                        <!-- Mevcut Şifre -->
+                        <StackLayout Spacing="8">
+                            <Label Text="Mevcut Şifre" TextColor="LightGray" FontSize="14" />
+                            <Frame BorderColor="Gold" 
+                                   BackgroundColor="#2a2a2a" 
+                                   Opacity="0.9"
+                                   CornerRadius="10" 
+                                   Padding="0" 
+                                   HasShadow="False">
+                                <Entry x:Name="EskiSifreEntry" 
+                                       Placeholder="Mevcut şifrenizi girin"
+                                       PlaceholderColor="Gray"
+                                       TextColor="White"
+                                       BackgroundColor="Transparent"
+                                       IsPassword="True"
+                                       Margin="15,10" />
+                            </Frame>
+                        </StackLayout>
+
+                        <!-- Yeni Şifre -->
+                        <StackLayout Spacing="8">
+                            <Label Text="Yeni Şifre" TextColor="LightGray" FontSize="14" />
+                            <Frame BorderColor="Gold" 
+                                   BackgroundColor="#2a2a2a" 
+                                   Opacity="0.9"
+                                   CornerRadius="10" 
+                                   Padding="0" 
+                                   HasShadow="False">
+                                <Entry x:Name="YeniSifreEntry" 
+                                       Placeholder="Yeni şifrenizi girin"
+                                       PlaceholderColor="Gray"
+                                       TextColor="White"
+                                       BackgroundColor="Transparent"
+                                       IsPassword="True"
+                                       Margin="15,10" />
+                            </Frame>
+                        </StackLayout>
+
+                        <!-- Yeni Şifre Tekrar -->
+                        <StackLayout Spacing="8">
+                            <Label Text="Yeni Şifre (Tekrar)" TextColor="LightGray" FontSize="14" />
+                            <Frame BorderColor="Gold" 
+                                   BackgroundColor="#2a2a2a" 
+                                   Opacity="0.9"
+                                   CornerRadius="10" 
+                                   Padding="0" 
+                                   HasShadow="False">
+                                <Entry x:Name="YeniSifreTekrarEntry" 
+                                       Placeholder="Yeni şifrenizi tekrar girin"
+                                       PlaceholderColor="Gray"
+                                       TextColor="White"
+                                       BackgroundColor="Transparent"
+                                       IsPassword="True"
+                                       Margin="15,10" />
+                            </Frame>
+                        </StackLayout>
+
+                        <!-- Şifre Değiştir Butonu -->
+                        <Button Text="ŞİFREYİ DEĞİŞTİR" 
+                                BackgroundColor="Gold"
+                                TextColor="Black"
+                                FontAttributes="Bold"
+                                FontSize="16"
+                                CornerRadius="10"
+                                HeightRequest="50"
+                                Clicked="OnSifreDegistirClicked"
+                                Margin="0,15,0,0" />
+
+                        <!-- Loading Indicator -->
+                        <ActivityIndicator x:Name="LoadingIndicator" 
+                                         Color="Gold"
+                                         IsVisible="False"
+                                         IsRunning="False" />
+
+                        <!-- Mesaj Label -->
+                        <Label x:Name="MesajLabel" 
+                               Text=""
+                               TextColor="Red"
+                               FontSize="14"
+                               HorizontalOptions="Center"
+                               IsVisible="False" />
+
+                        <!-- Geri dön linki -->
+                        <StackLayout Orientation="Horizontal" 
+                                     HorizontalOptions="Center"
+                                     Spacing="10"
+                                     Margin="0,20,0,0">
+                            <Label Text="←" 
+                                   TextColor="Gold" 
+                                   FontSize="18"
+                                   FontAttributes="Bold" />
+                            <Label Text="Giriş Sayfasına Dön" 
+                                   TextColor="Gold" 
+                                   FontSize="14"
+                                   FontAttributes="Bold">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnGeriDonTapped" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </StackLayout>
+
+                        <!-- İpucu -->
+                        <Frame BackgroundColor="#2a2a2a" 
+                               Opacity="0.7"
+                               CornerRadius="10" 
+                               Padding="15"
+                               Margin="0,15,0,0"
+                               HasShadow="False">
+                            <StackLayout Orientation="Horizontal" Spacing="10">
+                                <Label Text="💡" 
+                                       FontSize="16"
+                                       VerticalOptions="Start" />
+                                <Label Text="Şifreniz en az 6 karakter olmalı ve güçlü bir şifre seçmeyi unutmayın!"
+                                       TextColor="LightGray"
+                                       FontSize="12"
+                                       LineBreakMode="WordWrap"
+                                       VerticalOptions="Center" />
+                            </StackLayout>
+                        </Frame>
+
+                    </StackLayout>
+                </Frame>
+
+            </StackLayout>
+        </ScrollView>
+    </Grid>
+
+</ContentPage>

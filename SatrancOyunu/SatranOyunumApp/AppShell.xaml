@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="SatranOyunumApp.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:SatranOyunumApp.Views"
+    Shell.FlyoutBehavior="Disabled">
+
+    <ShellContent
+        Title="Giriş"
+        ContentTemplate="{DataTemplate local:LoginPage}"
+        Route="LoginPage" />
+
+    <ShellContent
+        Title="Kayıt"
+        ContentTemplate="{DataTemplate local:KullanıcıKaydi}"
+        Route="KullanıcıKaydi" />
+
+    <ShellContent Title="SifreDegistir" 
+              ContentTemplate="{DataTemplate local:SifreDegistirPage}" 
+              Route="SifreDegistirPage" />
+</Shell>
