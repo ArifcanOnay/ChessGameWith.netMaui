@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SatrancAPI.Datas;
 
@@ -11,9 +12,11 @@ using SatrancAPI.Datas;
 namespace SatrancApi.Migrations
 {
     [DbContext(typeof(SatrancDbContext))]
-    partial class SatrancDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250610125634_SifreKolonu")]
+    partial class SifreKolonu
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

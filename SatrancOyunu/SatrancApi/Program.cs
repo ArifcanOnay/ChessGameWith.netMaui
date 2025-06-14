@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using SatrancAPI.Datas;
 using SatrancAPI.Entities.Models;
@@ -248,12 +249,116 @@ app.MapPost("/api/oyunlar/{oyunId}/piyon-terfi", async (Guid oyunId, PiyonTerfiR
     await db.SaveChangesAsync();
     return Results.Ok(new { message = "Piyon başarıyla terfi edildi", tas = tas });
 });
+// Kullanıcı kayıt endpoint'i
+app.MapPost("/api/kullanicilar/kayit", async (KullaniciKayitRequest request, SatrancDbContext db) =>
+{
+    // Aynı email var mı kontrol et
+    var mevcutKullanici = await db.Oyuncular
+        .FirstOrDefaultAsync(o => o.email == request.Email);
+
+    if (mevcutKullanici != null)
+    {
+        return Results.BadRequest(new { Mesaj = "Bu email adresi ile kayıtlı kullanıcı zaten mevcut" });
+    }
+
+    // Yeni kullanıcı oluştur
+    var yeniOyuncu = new Oyuncu
+    {
+        Id = Guid.NewGuid(),
+        isim = request.KullaniciAdi,
+        email = request.Email,
+        Sifre = request.Sifre,
+        renk = Renk.Beyaz // Default renk, sonra değiştirilebilir
+    };
+
+    db.Oyuncular.Add(yeniOyuncu);
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        Mesaj = "Kullanıcı başarıyla oluşturuldu",
+        OyuncuId = yeniOyuncu.Id,
+        Isim = yeniOyuncu.isim
+    });
+});
+app.MapPut("/api/kullanicilar/sifre-degistir", async (SifreEmailDegistirRequest request, SatrancDbContext db) =>
+{
+    try
+    {
+        var oyuncu = await db.Oyuncular
+            .FirstOrDefaultAsync(o => o.email == request.Email);
+
+        if (oyuncu == null)
+        {
+            return Results.NotFound(new { Mesaj = "Bu email ile kayıtlı kullanıcı bulunamadı" });
+        }
+
+        // Mevcut şifre kontrolü
+        if (oyuncu.Sifre != request.EskiSifre)
+        {
+            return Results.BadRequest(new { Mesaj = "Mevcut şifre yanlış" });
+        }
+
+        // Yeni şifre doğrulama
+        if (request.YeniSifre != request.YeniSifreTekrar)
+        {
+            return Results.BadRequest(new { Mesaj = "Yeni şifreler eşleşmiyor" });
+        }
+
+        // Şifre güncelleme
+        oyuncu.Sifre = request.YeniSifre;
+        //oyuncu.UpdatedDate = DateTime.Now;
+        //oyuncu.UpdatedBy = oyuncu.isim ?? "System";
+
+        await db.SaveChangesAsync();
+
+        return Results.Ok(new { Mesaj = "Şifre başarıyla güncellendi" });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Hata: {ex.Message}");
+    }
+});
+app.MapPost("/api/kullanicilar/login", async (LoginRequest request, SatrancDbContext db) =>
+{
+    // Kullanıcıyı email ile bul
+    var kullanici = await db.Oyuncular
+        .FirstOrDefaultAsync(o => o.email == request.Email);
+
+    if (kullanici == null)
+    {
+        return Results.BadRequest(new { Mesaj = "E-posta adresi bulunamadı" });
+    }
+
+    // Şifre kontrolü
+    if (kullanici.Sifre != request.Sifre)
+    {
+        return Results.BadRequest(new { Mesaj = "Şifre yanlış" });
+    }
+
+    // Başarılı giriş
+    return Results.Ok(new
+    {
+        Mesaj = "Giriş başarılı",
+        OyuncuId = kullanici.Id,
+        KullaniciAdi = kullanici.isim,
+        Email = kullanici.email
+    });
+});
+
 
 
 app.Run();
 
 // API istekleri için basit sınıflar (DTO)
+public class LoginRequest
+{
+    public string Email { get; set; }
+    public string Sifre { get; set; }
+}
 public record OyunOlusturRequest(Guid BeyazOyuncuId, Guid SiyahOyuncuId);
 public record HamleRequest(Guid TasId, int HedefX, int HedefY);
 public record OyuncuOlusturRequest(string isim, string email, Renk renk);
 public record PiyonTerfiRequest(Guid PiyonId, TasTuru YeniTasTuru);
+public record KullaniciKayitRequest(string KullaniciAdi, string Email, string Sifre);
+public record SifreEmailDegistirRequest(string Email, string EskiSifre, string YeniSifre, string YeniSifreTekrar);
