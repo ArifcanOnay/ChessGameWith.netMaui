@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="SatranOyunumApp.Views.GamePage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Satranç Oyunu">
+
+    <ScrollView>
+        <Grid Padding="10">
+            <Grid.RowDefinitions>
+                <!-- YENİ: Kullanıcı bilgi paneli için satır eklendi -->
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- GÜNCELLENDİ: Kullanıcı Bilgileri Panel + Çıkış Butonu -->
+            <Frame Grid.Row="0" BackgroundColor="DarkSlateBlue" Padding="15" Margin="5">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Sol taraf: Kullanıcı bilgileri -->
+                    <StackLayout Grid.Column="0" Orientation="Horizontal" VerticalOptions="Center">
+                        <Label Text="👤" FontSize="20" TextColor="White" VerticalOptions="Center"/>
+                        <Label x:Name="KullaniciLabel" 
+                               Text="Kullanıcı: Misafir" 
+                               FontSize="18" 
+                               FontAttributes="Bold" 
+                               TextColor="White" 
+                               VerticalOptions="Center"
+                               Margin="10,0,0,0"/>
+                        <Label x:Name="EmailLabel" 
+                               Text="📧 email@gmail.com" 
+                               FontSize="14" 
+                               TextColor="LightGray" 
+                               VerticalOptions="Center"
+                               Margin="20,0,0,0"/>
+                    </StackLayout>
+
+                    <!-- Sağ taraf: Çıkış butonu -->
+                    <Button Grid.Column="1" 
+                            x:Name="CikisButton"
+                            Text="🚪 Çıkış Yap" 
+                            BackgroundColor="DarkRed" 
+                            TextColor="White"
+                            FontSize="14"
+                            Padding="15,8"
+                            CornerRadius="20"
+                            VerticalOptions="Center"
+                            Clicked="CikisYap"/>
+                </Grid>
+            </Frame>
+
+            <!-- Oyun Ayarları Panel -->
+            <Frame Grid.Row="1" BackgroundColor="LightBlue" Padding="15" Margin="5">
+                <StackLayout>
+                    <Label Text="Oyun Ayarları" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center"/>
+
+                    <!-- Picker: Renk Seçimi -->
+                    <StackLayout Orientation="Horizontal">
+                        <Label Text="Renk:" VerticalOptions="Center" WidthRequest="80"/>
+                        <Picker x:Name="RenkPicker" WidthRequest="150">
+                            <Picker.Items>
+                                <x:String>Beyaz</x:String>
+                                <x:String>Siyah</x:String>
+                            </Picker.Items>
+                        </Picker>
+                    </StackLayout>
+
+                    <!-- TimePicker: Hamle Süresi -->
+                    <StackLayout Orientation="Horizontal">
+                        <Label Text="Hamle Süresi:" VerticalOptions="Center" WidthRequest="100"/>
+                        <TimePicker x:Name="HamleSuresiPicker" Format="mm:ss" WidthRequest="100"/>
+                    </StackLayout>
+
+                    <!-- CheckBox: Ses Ayarları -->
+                    <StackLayout Orientation="Horizontal">
+                        <CheckBox x:Name="SesCheckBox" IsChecked="True"/>
+                        <Label Text="Ses Efektleri" VerticalOptions="Center"/>
+                    </StackLayout>
+
+                    <Button x:Name="YeniOyunBtn" Text="Yeni Oyun Başlat" BackgroundColor="Green" TextColor="White" Clicked="YeniOyunBaslat"/>
+                </StackLayout>
+            </Frame>
+
+            <!-- Oyuncu Bilgileri -->
+            <Frame Grid.Row="2" BackgroundColor="LightGray" Padding="10" Margin="5">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label x:Name="BeyazOyuncuLabel" Grid.Column="0" Text="Beyaz: Hazır" FontSize="16" HorizontalOptions="Start"/>
+                    <Label x:Name="SiyahOyuncuLabel" Grid.Column="1" Text="Siyah: Hazır" FontSize="16" HorizontalOptions="End"/>
+                </Grid>
+            </Frame>
+
+            <!-- Satranç Tahtası -->
+            <Frame Grid.Row="3" BackgroundColor="SaddleBrown" Padding="5" Margin="5">
+                <Grid x:Name="ChessBoard" BackgroundColor="White" HeightRequest="400" WidthRequest="400">
+                    <Label Text="Satranç Tahtası Buraya Gelecek" HorizontalOptions="Center" VerticalOptions="Center" FontSize="16"/>
+                </Grid>
+            </Frame>
+
+        </Grid>
+    </ScrollView>
+</ContentPage>

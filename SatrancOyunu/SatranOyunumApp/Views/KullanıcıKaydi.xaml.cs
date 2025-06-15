@@ -20,6 +20,14 @@ public partial class KullanýcýKaydi : ContentPage
             await DisplayAlert("Hata", "Kullanýcý adý boþ olamaz!", "Tamam");
             return;
         }
+        // *** YENÝ: Email doðrulamasý ***
+        if (!EmailDogrula(EmailEntry.Text))
+        {
+            await DisplayAlert("Geçersiz Email",
+                "Lütfen geçerli bir Gmail adresi giriniz.\nÖrnek: kullaniciadi@gmail.com",
+                "Tamam");
+            return;
+        }
 
         if (string.IsNullOrWhiteSpace(EmailEntry.Text))
         {
@@ -56,7 +64,7 @@ public partial class KullanýcýKaydi : ContentPage
                 EmailEntry.Text = "";
                 SifreEntry.Text = "";
 
-                // *** DEÐÝÞTÝRÝLEN: Route ismiyle geri dön ***
+               
                 await Shell.Current.GoToAsync("//LoginPage");
             }
             else
@@ -74,5 +82,38 @@ public partial class KullanýcýKaydi : ContentPage
             loadingButton.Text = "KAYIT OL";
             loadingButton.IsEnabled = true;
         }
+    }
+    /// <summary>
+    /// Email adresinin @gmail.com ile bitip bitmediðini kontrol eder
+    /// </summary>
+    /// <param name="email">Kontrol edilecek email adresi</param>
+    /// <returns>Geçerli ise true, deðilse false</returns>
+    private bool EmailDogrula(string email)
+    {
+        // Null veya boþ kontrol
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+
+        // Trim ile baþýndaki ve sonundaki boþluklarý temizle
+        email = email.Trim().ToLower();
+
+        // @ iþareti var mý kontrol et
+        if (!email.Contains("@"))
+            return false;
+
+        // @gmail.com ile bitiyor mu kontrol et
+        if (!email.EndsWith("@gmail.com"))
+            return false;
+
+        // @ iþaretinden önce en az 1 karakter var mý kontrol et
+        string kullaniciAdi = email.Substring(0, email.IndexOf("@"));
+        if (string.IsNullOrWhiteSpace(kullaniciAdi))
+            return false;
+
+        // Kullanýcý adýnda geçersiz karakterler var mý kontrol et
+        if (kullaniciAdi.Contains(" ") || kullaniciAdi.Contains(".."))
+            return false;
+
+        return true;
     }
 }

@@ -19,4 +19,8 @@
     <ShellContent Title="SifreDegistir" 
               ContentTemplate="{DataTemplate local:SifreDegistirPage}" 
               Route="SifreDegistirPage" />
+    <ShellContent
+            Title="Oyun"
+            ContentTemplate="{DataTemplate local:GamePage}"
+            Route="GamePage" />
 </Shell>

@@ -10,7 +10,7 @@
         <Image Source="https://i.guim.co.uk/img/media/699cce4914b90ae0ba89787178bc48314d50eb89/0_84_5081_3223/master/5081.jpg?width=1900&amp;dpr=2&amp;s=none&amp;crop=none"
                Aspect="AspectFill" />
 
-        <!-- *** DEĞİŞTİRİLEN: Koyu overlay şeffaflığı 0.6'dan 0.3'e düşürüldü *** -->
+       
         <BoxView Color="Black" Opacity="0.3" />
 
         <!-- Kayıt formu -->
@@ -18,7 +18,6 @@
             <StackLayout Spacing="20">
 
                 <!-- Kayıt formu -->
-                <!-- *** DEĞİŞTİRİLEN: Frame şeffaflığı azaltıldı *** -->
                 <Frame BackgroundColor="#1a1a1a" 
                        Opacity="0.85"
                        CornerRadius="20" 
