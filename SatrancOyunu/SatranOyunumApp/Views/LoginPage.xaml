@@ -17,9 +17,9 @@
         <ScrollView VerticalOptions="Center" Padding="40,20">
             <StackLayout Spacing="20">
 
-                <!-- Login formu -->
-                <!-- *** DEĞİŞTİRİLEN: Frame şeffaflığı azaltıldı *** -->
-                <Frame BackgroundColor="#1a1a1a" 
+                <!-- *** MEVCUT LOGIN FORMU - SADECE LINKLER KALDIRILDI *** -->
+                <Frame x:Name="LoginFormFrame"
+                       BackgroundColor="#1a1a1a" 
                        Opacity="0.85"
                        CornerRadius="20" 
                        Padding="30,40"
@@ -79,7 +79,7 @@
 
                         <!-- Giriş Yap Butonu -->
                         <Button x:Name="GirisButton"
-                            Text="GİRİŞ YAP" 
+                                Text="GİRİŞ YAP" 
                                 BackgroundColor="Gold"
                                 TextColor="Black"
                                 FontAttributes="Bold"
@@ -107,14 +107,56 @@
                             </Label>
                         </StackLayout>
 
-                        <!-- YENİ EKLENEN: Şifre Değiştir ve Oyuna Git Linkleri -->
+                        <!-- KALDIRILDI: Şifre Değiştir ve Oyuna Git Linkleri -->
+
+                    </StackLayout>
+                </Frame>
+
+                <!-- *** MEVCUT HOŞGELDİN EKRANI - DEĞİŞİKLİK YOK *** -->
+                <Frame x:Name="HosgeldinFrame"
+                       BackgroundColor="#1a1a1a" 
+                       Opacity="0.85"
+                       CornerRadius="20" 
+                       Padding="30,40"
+                       HasShadow="True"
+                       IsVisible="False">
+                    <StackLayout Spacing="25" HorizontalOptions="Center">
+
+                        <!-- Başlık -->
+                        <Label Text="♔ SATRANÇ OYUNU ♔" 
+                               FontSize="28" 
+                               FontAttributes="Bold"
+                               TextColor="Gold"
+                               HorizontalOptions="Center" />
+
+                        <!-- Hoşgeldin mesajı -->
+                        <Label x:Name="HosgeldinLabel"
+                               Text="Hoşgeldiniz!"
+                               FontSize="24" 
+                               FontAttributes="Bold"
+                               TextColor="White"
+                               HorizontalOptions="Center" />
+
+                        <!-- Alt mesaj -->
+                        <Label Text="Lütfen yapmak istediğiniz işlemi seçin"
+                               FontSize="16" 
+                               TextColor="LightGray"
+                               HorizontalOptions="Center"
+                               Margin="0,0,0,10" />
+
+                        <!-- Aşağı işaret eden parmak emoji -->
+                        <Label Text="👇"
+                               FontSize="40"
+                               HorizontalOptions="Center"
+                               Margin="0,10,0,20" />
+
+                        <!-- Seçenekler -->
                         <StackLayout Orientation="Horizontal" 
                                      HorizontalOptions="Center"
-                                     Spacing="20"
-                                     Margin="0,15,0,0">
+                                     Spacing="30">
                             <Label Text="Şifreyi Değiştir" 
                                    TextColor="Gold" 
-                                   FontSize="14"
+                                   FontSize="16"
                                    FontAttributes="Bold">
                                 <Label.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="OnSifreDegistirTapped" />
@@ -123,17 +165,28 @@
 
                             <Label Text="|" 
                                    TextColor="LightGray" 
-                                   FontSize="14" />
+                                   FontSize="16" />
 
                             <Label Text="Oyuna Git" 
                                    TextColor="Gold" 
-                                   FontSize="14"
+                                   FontSize="16"
                                    FontAttributes="Bold">
                                 <Label.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="OnOyunaGitTapped" />
                                 </Label.GestureRecognizers>
                             </Label>
                         </StackLayout>
+
+                        <!-- Çıkış yap butonu -->
+                        <Button Text="Çıkış Yap"
+                                BackgroundColor="DarkRed"
+                                TextColor="White"
+                                FontSize="14"
+                                CornerRadius="10"
+                                HeightRequest="40"
+                                WidthRequest="120"
+                                Clicked="OnCikisYapClicked"
+                                Margin="0,20,0,0" />
 
                     </StackLayout>
                 </Frame>

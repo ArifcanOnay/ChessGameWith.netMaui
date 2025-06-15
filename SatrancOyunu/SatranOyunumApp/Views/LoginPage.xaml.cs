@@ -37,13 +37,13 @@ public partial class LoginPage : ContentPage
 
             if (loginSonucu.Basarili)
             {
-                // Baþarýlý giriþ
-                await DisplayAlert("Baþarýlý", $"Hoþgeldin! {EmailEntry.Text}", "Tamam");
+                if (loginSonucu.Basarili)
+                {
+                    // *** YENÝ: Baþarýlý giriþten sonra hoþgeldin ekranýný göster ***
+                    HosgeldinEkraniniGoster(loginSonucu);
+                }
 
-                //// Ana sayfaya yönlendir (þimdilik TestPage'e gidelim)
-                //await Shell.Current.GoToAsync("//TestPage");
-                // Ana sayfaya yönlendir (þimdilik MainPage)
-                Application.Current.MainPage = new AppShell();
+                //Application.Current.MainPage = new AppShell();
             }
             else
             {
@@ -62,6 +62,34 @@ public partial class LoginPage : ContentPage
             GirisButton.IsEnabled = true;
         }
     }
+
+    private void HosgeldinEkraniniGoster(LoginSonucu loginSonucu)
+    {
+        // Login formunu gizle
+        LoginFormFrame.IsVisible = false;
+
+        // Hoþgeldin ekranýný göster
+        HosgeldinFrame.IsVisible = true;
+
+        // Kullanýcý adýný göster
+        HosgeldinLabel.Text = $"Hoþgeldiniz {loginSonucu.KullaniciAdi}!";
+        Preferences.Set("KullaniciAdi", loginSonucu.KullaniciAdi ?? "Kullanýcý");
+        Preferences.Set("KullaniciEmail", EmailEntry.Text);
+    }
+
+    private void OnCikisYapClicked(object sender, EventArgs e)
+    {
+        // Hoþgeldin ekranýný gizle
+        HosgeldinFrame.IsVisible = false;
+
+        // Login formunu göster
+        LoginFormFrame.IsVisible = true;
+
+        // Form alanlarýný temizle
+        EmailEntry.Text = "";
+        SifreEntry.Text = "";
+    }
+
     private async void OnSifreDegistirTapped(object sender, EventArgs e)
     {
         // Þifre deðiþtirme sayfasýna git
@@ -70,13 +98,19 @@ public partial class LoginPage : ContentPage
 
     private async void OnOyunaGitTapped(object sender, EventArgs e)
     {
-        // Direkt oyun sayfasýna git (hangi sayfa olduðunu söylerseniz doðru route'u yazarým)
-        await Shell.Current.GoToAsync("//MainPage"); // Bu kýsmý oyun sayfanýzýn route'una göre deðiþtirin
+        try
+        {
+            // GamePage'e git
+            await Shell.Current.GoToAsync("//GamePage");
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Hata", $"Sayfa yönlendirme hatasý: {ex.Message}", "Tamam");
+        }
     }
 
     private async void OnKayitOlTapped(object sender, EventArgs e)
     {
-        // *** YANLIÞ: "//KullanýcýKaydi" yerine "KullanýcýKaydi" olmalý ***
         await Shell.Current.GoToAsync("KullanýcýKaydi");
     }
 }
