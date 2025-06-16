@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SatrancApi.Entities.Models;
 using SatrancAPI.Datas;
 using SatrancAPI.Entities.HamleSınıfları;
 using SatrancAPI.Entities.Models;
@@ -118,84 +119,26 @@ namespace SatrancAPI.Services
             _tahtaYoneticisi.TahtayiOlustur(taslar);
         }
 
-        // ✅ EKSİK METOT - Tahta döndürür
+        // ✅ Tahta döndürür
         public async Task<Tas[,]> TahtayiGetir(Guid oyunId)
         {
             await TahtayiYukle(oyunId);
             return _tahtaYoneticisi.TahtayiGetir();
         }
 
-        // ✅ EKSİK METOT - Şah tehdit durumunu kontrol et
+        // ✅ Şah tehdit durumunu kontrol et
         public bool SahTehditAltindaMi(Renk sahRengi)
         {
             return _tahtaYoneticisi.SahTehditAltindaMi(sahRengi);
         }
 
-        // ✅ EKSİK METOT - Şah mat durumunu kontrol et
+        // ✅ Şah mat durumunu kontrol et
         public bool SahMatMi(Renk sahRengi)
         {
             return _tahtaYoneticisi.SahMatMi(sahRengi);
         }
 
-        // ✅ EKSİK METOT - Oyun durumunu getir
-        public async Task<object> OyunDurumunuGetir(Guid oyunId)
-        {
-            var oyun = await _dbContext.Oyunlar.FindAsync(oyunId);
-            if (oyun == null)
-                return null;
-
-            await TahtayiYukle(oyunId);
-
-            // Son hamleyi al
-            var sonHamle = await _dbContext.Hamleler
-                .Where(h => h.OyunId == oyunId)
-                .OrderByDescending(h => h.HamleTarihi)
-                .FirstOrDefaultAsync();
-
-            // Sıradaki oyuncuyu belirle
-            bool beyazSirasi = sonHamle == null || sonHamle.OyuncuId == oyun.SiyahOyuncuId;
-            Renk siradakiRenk = beyazSirasi ? Renk.Beyaz : Renk.Siyah;
-
-            // Şah durumlarını kontrol et
-            bool beyazSahTehdit = SahTehditAltindaMi(Renk.Beyaz);
-            bool siyahSahTehdit = SahTehditAltindaMi(Renk.Siyah);
-            bool beyazSahMat = beyazSahTehdit && SahMatMi(Renk.Beyaz);
-            bool siyahSahMat = siyahSahTehdit && SahMatMi(Renk.Siyah);
-
-            return new
-            {
-                Durum = oyun.Durum,
-                SiradakiOyuncuRengi = siradakiRenk,
-                BeyazSahTehditAltinda = beyazSahTehdit,
-                SiyahSahTehditAltinda = siyahSahTehdit,
-                BeyazSahMat = beyazSahMat,
-                SiyahSahMat = siyahSahMat,
-                OyunBittiMi = oyun.Durum != Durum.Oynaniyor
-            };
-        }
-
-        // ✅ EKSİK METOT - Piyon terfi
-        public async Task<bool> PiyonTerfiEt(Guid oyunId, Guid piyonId, TasTuru yeniTasTuru)
-        {
-            var piyon = await _dbContext.Taslar.FirstOrDefaultAsync(t => t.TasId == piyonId && t.AktifMi);
-            if (piyon == null || piyon.turu != TasTuru.Piyon)
-                return false;
-
-            // Piyonun terfi hattında olduğunu kontrol et
-            bool terfiPozisyonundaMi = (piyon.renk == Renk.Beyaz && piyon.X == 0) ||
-                                     (piyon.renk == Renk.Siyah && piyon.X == 7);
-            if (!terfiPozisyonundaMi)
-                return false;
-
-            // Piyonu istenen türe yükselt
-            piyon.turu = yeniTasTuru;
-            piyon.SonHareketTarihi = DateTime.Now;
-
-            await _dbContext.SaveChangesAsync();
-            return true;
-        }
-
-        // Hamle yapar
+        // Hamle yapar - ✅ TEK KİŞİLİK OYUN DESTEĞİ EKLENDİ
         public async Task<bool> HamleYap(Guid oyunId, Guid tasId, int hedefX, int hedefY)
         {
             var oyun = await _dbContext.Oyunlar.FindAsync(oyunId);
@@ -210,16 +153,22 @@ namespace SatrancAPI.Services
             if (tas == null)
                 return false;
 
-            // Sıra kontrolü - son hamleye bakarak
-            var sonHamle = await _dbContext.Hamleler
-                .Where(h => h.OyunId == oyunId)
-                .OrderByDescending(h => h.HamleTarihi)
-                .FirstOrDefaultAsync();
+            // ✅ TEK KİŞİLİK OYUN KONTROLÜ
+            bool tekKislikOyun = oyun.BeyazOyuncuId == oyun.SiyahOyuncuId;
 
-            bool beyazinSirasi = sonHamle == null || sonHamle.OyuncuId == oyun.SiyahOyuncuId;
+            if (!tekKislikOyun)
+            {
+                // Sıra kontrolü - sadece çok oyunculu oyunlarda
+                var sonHamle = await _dbContext.Hamleler
+                    .Where(h => h.OyunId == oyunId)
+                    .OrderByDescending(h => h.HamleTarihi)
+                    .FirstOrDefaultAsync();
 
-            if ((beyazinSirasi && tas.renk != Renk.Beyaz) || (!beyazinSirasi && tas.renk != Renk.Siyah))
-                return false;
+                bool beyazinSirasi = sonHamle == null || sonHamle.OyuncuId == oyun.SiyahOyuncuId;
+
+                if ((beyazinSirasi && tas.renk != Renk.Beyaz) || (!beyazinSirasi && tas.renk != Renk.Siyah))
+                    return false;
+            }
 
             // Hedef konumdaki taş (varsa)
             var hedefTas = await _dbContext.Taslar
@@ -263,55 +212,25 @@ namespace SatrancAPI.Services
 
             _dbContext.Hamleler.Add(hamle);
 
-            // Hamle sonrası kontroller
-            Renk rakipRenk = tas.renk == Renk.Beyaz ? Renk.Siyah : Renk.Beyaz;
-            bool sahTehditAltinda = _tahtaYoneticisi.SahTehditAltindaMi(rakipRenk);
-            bool sahMat = _tahtaYoneticisi.SahMatMi(rakipRenk);
-
-            // Oyun durumunu güncelle
-            oyun.SahDurumu = sahTehditAltinda;
-
-            // Şah mat durumunu kontrol et
-            if (sahMat)
-            {
-                // Oyunu bitir ve kazananı belirle
-                oyun.Durum = Durum.Bitiyor;
-                oyun.BitisTarihi = DateTime.Now;
-                oyun.KazananOyuncu = tas.renk == Renk.Beyaz ? "Beyaz" : "Siyah";
-                oyun.BitisNedeni = "Şah Mat";
-
-                // Kazanan oyuncunun skorunu artır
-                if (tas.renk == Renk.Beyaz)
-                {
-                    oyun.BeyazSkor += 1;
-                }
-                else
-                {
-                    oyun.SiyahSkor += 1;
-                }
-            }
-
             await _dbContext.SaveChangesAsync();
             return true;
         }
 
-        // Geçerli hamleleri getir
-        public async Task<List<(int X, int Y)>> GecerliHamleleriGetir(Guid oyunId, Guid tasId)
+        // Geçerli hamleleri getir - ✅ DÜZELTME: Koordinat listesi döndürür
+        public async Task<List<Koordinat>> GecerliHamleleriGetir(Guid oyunId, Guid tasId)
         {
             // Tahtayı yükle
             await TahtayiYukle(oyunId);
             var tas = await _dbContext.Taslar.FirstOrDefaultAsync(t => t.TasId == tasId && t.AktifMi);
             if (tas == null)
-                return new List<(int, int)>();
+                return new List<Koordinat>();
 
-            // HamleFactory ile taşın geçerli hamlelerini bul
-            var hamleSinifi = HamleFactory.HamleSinifiGetir(tas.turu);
-            var tahta = _tahtaYoneticisi.TahtayiGetir();
-            var hamleler = hamleSinifi.getGecerliHamleler(tas, tahta);
-            return hamleler;
+            // TahtaYoneticisi'nden tuple listesi al ve Koordinat listesine çevir
+            var hamleler = _tahtaYoneticisi.GecerliHamleleriGetir(tas);
+            return hamleler.Select(h => new Koordinat(h.x, h.y)).ToList();
         }
 
-        // ✅ EKSİK METOT - Oyunu bitir
+        // ✅ Oyunu bitir
         public async Task<bool> OyunuBitir(Guid oyunId, string bitisNedeni, string kazanan = null)
         {
             var oyun = await _dbContext.Oyunlar.FindAsync(oyunId);
@@ -329,41 +248,6 @@ namespace SatrancAPI.Services
 
             await _dbContext.SaveChangesAsync();
             return true;
-        }
-
-        // ✅ EKSİK METOT - Oyun istatistiklerini getir
-        public async Task<object> OyunIstatistikleriniGetir(Guid oyunId)
-        {
-            var oyun = await _dbContext.Oyunlar
-                .Include(o => o.BeyazOyuncu)
-                .Include(o => o.SiyahOyuncu)
-                .Include(o => o.Hamleler)
-                .FirstOrDefaultAsync(o => o.OyunId == oyunId);
-
-            if (oyun == null)
-                return null;
-
-            var aktifTaslar = await _dbContext.Taslar
-                .Where(t => t.OyunId == oyunId && t.AktifMi)
-                .ToListAsync();
-
-            return new
-            {
-                OyunId = oyun.OyunId,
-                Durum = oyun.Durum,
-                BaslangicTarihi = oyun.BaslangicTarihi,
-                BitisTarihi = oyun.BitisTarihi,
-                ToplamHamleSayisi = oyun.ToplamHamleSayisi,
-                BeyazOyuncu = oyun.BeyazOyuncu?.isim,
-                SiyahOyuncu = oyun.SiyahOyuncu?.isim,
-                BeyazSkor = oyun.BeyazSkor,
-                SiyahSkor = oyun.SiyahSkor,
-                KazananOyuncu = oyun.KazananOyuncu,
-                BitisNedeni = oyun.BitisNedeni,
-                AktifTasSayisi = aktifTaslar.Count,
-                BeyazTasSayisi = aktifTaslar.Count(t => t.renk == Renk.Beyaz),
-                SiyahTasSayisi = aktifTaslar.Count(t => t.renk == Renk.Siyah)
-            };
         }
     }
 }

@@ -7,14 +7,16 @@
     <ScrollView>
         <Grid Padding="10">
             <Grid.RowDefinitions>
-                <!-- YENİ: Kullanıcı bilgi paneli için satır eklendi -->
+                <!-- Kullanıcı bilgi paneli için satır -->
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <!-- ✅ YENİ: Oyun Geçmişi için satır eklendi -->
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <!-- GÜNCELLENDİ: Kullanıcı Bilgileri Panel + Çıkış Butonu -->
+            <!-- Kullanıcı Bilgileri Panel + Çıkış Butonu -->
             <Frame Grid.Row="0" BackgroundColor="DarkSlateBlue" Padding="15" Margin="5">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -62,18 +64,26 @@
                     <!-- Picker: Renk Seçimi -->
                     <StackLayout Orientation="Horizontal">
                         <Label Text="Renk:" VerticalOptions="Center" WidthRequest="80"/>
-                        <Picker x:Name="RenkPicker" WidthRequest="150">
-                            <Picker.Items>
-                                <x:String>Beyaz</x:String>
-                                <x:String>Siyah</x:String>
-                            </Picker.Items>
-                        </Picker>
+                        <Label x:Name="RenkLabel" 
+           Text="Beyaz" 
+           VerticalOptions="Center" 
+           WidthRequest="150"
+            FontAttributes="Bold"
+           TextColor="DarkBlue"/>
                     </StackLayout>
 
                     <!-- TimePicker: Hamle Süresi -->
                     <StackLayout Orientation="Horizontal">
                         <Label Text="Hamle Süresi:" VerticalOptions="Center" WidthRequest="100"/>
-                        <TimePicker x:Name="HamleSuresiPicker" Format="mm:ss" WidthRequest="100"/>
+                        <Label x:Name="HamleSuresiLabel" 
+       Text="05:00" 
+       VerticalOptions="Center" 
+       WidthRequest="100"
+       FontSize="16"
+       FontAttributes="Bold"
+       TextColor="DarkRed"
+       BackgroundColor="White"
+       HorizontalTextAlignment="Center"/>
                     </StackLayout>
 
                     <!-- CheckBox: Ses Ayarları -->
@@ -82,24 +92,100 @@
                         <Label Text="Ses Efektleri" VerticalOptions="Center"/>
                     </StackLayout>
 
-                    <Button x:Name="YeniOyunBtn" Text="Yeni Oyun Başlat" BackgroundColor="Green" TextColor="White" Clicked="YeniOyunBaslat"/>
+                    <!-- ✅ SADECE TEST OYUNU BUTONU KALDI -->
+                    <Button x:Name="TestOyunBtn" 
+                            Text="🎮 Oyunu Başlat" 
+                            BackgroundColor="Orange" 
+                            TextColor="White" 
+                            Clicked="TestOyunuBaslat"/>
                 </StackLayout>
             </Frame>
 
-            <!-- Oyuncu Bilgileri -->
+            <!-- Oyuncu Bilgileri + Sıra Göstergesi -->
             <Frame Grid.Row="2" BackgroundColor="LightGray" Padding="10" Margin="5">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Label x:Name="BeyazOyuncuLabel" Grid.Column="0" Text="Beyaz: Hazır" FontSize="16" HorizontalOptions="Start"/>
-                    <Label x:Name="SiyahOyuncuLabel" Grid.Column="1" Text="Siyah: Hazır" FontSize="16" HorizontalOptions="End"/>
-                </Grid>
+                <StackLayout>
+                    <!-- Sıra Göstergesi -->
+                    <Label x:Name="SiraLabel" 
+                           Text="🎯 Sıra: Beyaz" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="DarkBlue" 
+                           HorizontalOptions="Center" 
+                           Margin="0,0,0,10"/>
+
+                    <!-- Oyuncu bilgileri -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Label x:Name="BeyazOyuncuLabel" Grid.Column="0" Text="Beyaz: Hazır" FontSize="16" HorizontalOptions="Start"/>
+                        <Label x:Name="SiyahOyuncuLabel" Grid.Column="1" Text="Siyah: Hazır" FontSize="16" HorizontalOptions="End"/>
+                    </Grid>
+                </StackLayout>
             </Frame>
 
-            <!-- Satranç Tahtası -->
-            <Frame Grid.Row="3" BackgroundColor="SaddleBrown" Padding="5" Margin="5">
+            <!-- ✅ YENİ: Oyun Geçmişi Panel - CollectionView -->
+            <Frame Grid.Row="3" BackgroundColor="LightSteelBlue" Padding="10" Margin="5">
+                <StackLayout>
+                    <Label Text="📋 Oyun Geçmişi" FontSize="16" FontAttributes="Bold" HorizontalOptions="Center"/>
+
+                    <!-- ✅ CollectionView - Oyun geçmişi için -->
+                    <CollectionView x:Name="OyunGecmisiCollectionView" 
+                                    HeightRequest="120"
+                                    BackgroundColor="White">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="8" BackgroundColor="White">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Oyun numarası -->
+                                    <Label Grid.Column="0" 
+                                           Text="{Binding OyunNo}" 
+                                           FontSize="14" 
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center"
+                                           Margin="0,0,10,0"/>
+
+                                    <!-- Oyun detayları -->
+                                    <StackLayout Grid.Column="1" VerticalOptions="Center">
+                                        <Label Text="{Binding OyunTarihi, StringFormat='📅 {0:dd/MM/yyyy HH:mm}'}" 
+                                               FontSize="11" 
+                                               TextColor="Gray"/>
+                                        <Label Text="{Binding Kazanan, StringFormat='🏆 Kazanan: {0}'}" 
+                                               FontSize="12" 
+                                               FontAttributes="Bold"
+                                               TextColor="DarkGreen"/>
+                                    </StackLayout>
+
+                                    <!-- Durum ikonu -->
+                                    <Label Grid.Column="2" 
+                                           Text="{Binding DurumIkonu}" 
+                                           FontSize="18" 
+                                           VerticalOptions="Center"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+
+                        <!-- Boş liste mesajı -->
+                        <CollectionView.EmptyView>
+                            <StackLayout HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label Text="🎮 Henüz oyun oynamamışsınız" 
+                                       FontSize="12" 
+                                       TextColor="Gray" 
+                                       HorizontalOptions="Center"/>
+                            </StackLayout>
+                        </CollectionView.EmptyView>
+                    </CollectionView>
+                </StackLayout>
+            </Frame>
+
+            <!-- Satranç Tahtası - Grid.Row="4" olarak güncellendi -->
+            <Frame Grid.Row="4" BackgroundColor="SaddleBrown" Padding="5" Margin="5">
                 <Grid x:Name="ChessBoard" BackgroundColor="White" HeightRequest="400" WidthRequest="400">
                     <Label Text="Satranç Tahtası Buraya Gelecek" HorizontalOptions="Center" VerticalOptions="Center" FontSize="16"/>
                 </Grid>

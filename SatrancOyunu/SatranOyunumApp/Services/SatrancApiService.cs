@@ -2,11 +2,12 @@
 using System.Text;
 using System.Net.Http;
 using SatranOyunumApp.Models;
+using System.Text.Json.Serialization;
 
 namespace SatranOyunumApp.Services
 {
 
-    public class SatrancApiService
+    public class SatrancApiService:ISatrancApiService
     {
         private readonly HttpClient _httpClient;
         private readonly string _baseUrl = "https://localhost:7003";
@@ -227,7 +228,6 @@ namespace SatranOyunumApp.Services
 
                 var json = JsonSerializer.Serialize(request);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-
                 var response = await _httpClient.PostAsync("/api/oyunlar", content);
 
                 if (response.IsSuccessStatusCode)
@@ -268,7 +268,7 @@ namespace SatranOyunumApp.Services
         }
 
         // 5. Bir taşın geçerli hamlelerini getir
-        public async Task<List<object>> GecerliHamlelerGetir(Guid oyunId, Guid tasId)
+        public async Task<List<dynamic>> GecerliHamlelerGetir(Guid oyunId, Guid tasId)
         {
             try
             {
@@ -276,9 +276,21 @@ namespace SatranOyunumApp.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<object>>(json, GetJsonOptions()) ?? new List<object>();
+                    var jsonDoc = JsonDocument.Parse(json);
+                    var hamleler = new List<dynamic>();
+
+                    foreach (var element in jsonDoc.RootElement.EnumerateArray())
+                    {
+                        // X ve Y koordinatlarını çıkart
+                        var x = element.GetProperty("x").GetInt32();
+                        var y = element.GetProperty("y").GetInt32();
+
+                        hamleler.Add(new { x = x, y = y });
+                    }
+
+                    return hamleler;
                 }
-                return new List<object>();
+                return new List<dynamic>();
             }
             catch (Exception ex)
             {
@@ -392,6 +404,92 @@ namespace SatranOyunumApp.Services
             }
         }
 
+        // ========== YENİ EKLENDİ: Oyuncu oluştur (Renk enum ile) ==========
+        public async Task<OyuncuOlusturSonucu> OyuncuOlustur(string isim, string email, Renk renk)
+        {
+            try
+            {
+                var request = new { isim = isim, email = email, renk = renk };
+                var json = JsonSerializer.Serialize(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync("/api/oyuncular", content);
+                var responseJson = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var oyuncu = JsonSerializer.Deserialize<Oyuncu>(responseJson, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    return new OyuncuOlusturSonucu { Basarili = true, Oyuncu = oyuncu, Mesaj = "Oyuncu oluşturuldu" };
+                }
+                else
+                {
+                    return new OyuncuOlusturSonucu { Basarili = false, Mesaj = responseJson };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new OyuncuOlusturSonucu { Basarili = false, Mesaj = ex.Message };
+            }
+        }
+        // SatrancApiService.cs'e ekle (diğer metotların altına):
+
+        public async Task<OyunDurumSonucu> OyunDurumuGetir(Guid oyunId)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_baseUrl}/api/oyunlar/{oyunId}/durum");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonString = await response.Content.ReadAsStringAsync();
+
+                    // ✅ Manuel JSON parse (daha güvenli)
+                    var jsonDoc = JsonDocument.Parse(jsonString);
+                    var root = jsonDoc.RootElement;
+
+                    var durum = new OyunDurumSonucu
+                    {
+                        Basarili = true,
+                        SiradakiOyuncuRengiId = root.GetProperty("siradakiOyuncuRengi").GetInt32(),
+                        BeyazSahTehditAltinda = root.GetProperty("beyazSahTehditAltinda").GetBoolean(),
+                        SiyahSahTehditAltinda = root.GetProperty("siyahSahTehditAltinda").GetBoolean(),
+                        BeyazSahMat = root.GetProperty("beyazSahMat").GetBoolean(),
+                        SiyahSahMat = root.GetProperty("siyahSahMat").GetBoolean(),
+                        OyunBittiMi = root.GetProperty("oyunBittiMi").GetBoolean()
+                    };
+
+                    return durum;
+                }
+
+                return new OyunDurumSonucu { Basarili = false, Mesaj = $"API Hatası: {response.StatusCode}" };
+            }
+            catch (Exception ex)
+            {
+                return new OyunDurumSonucu { Basarili = false, Mesaj = ex.Message };
+            }
+        }
+        public async Task<string> TestOyunDurumuEndpoint(Guid oyunId)
+        {
+            try
+            {
+                var url = $"{_baseUrl}/api/oyunlar/{oyunId}/durum";
+                var response = await _httpClient.GetAsync(url);
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                return $"URL: {url}\nStatus: {response.StatusCode}\nResponse: {content}";
+            }
+            catch (Exception ex)
+            {
+                return $"Hata: {ex.Message}";
+            }
+        }
+
+
+
         private JsonSerializerOptions GetJsonOptions()
         {
             return new JsonSerializerOptions
@@ -435,4 +533,21 @@ namespace SatranOyunumApp.Services
         public string? Mesaj { get; set; }
         public Oyuncu? Oyuncu { get; set; }
     }
+    public class OyunDurumSonucu
+    {
+        public bool Basarili { get; set; } = true;
+        public string? Mesaj { get; set; }
+
+        // ✅ JSON attribute'ları kaldır, manuel parse kullan
+        public int SiradakiOyuncuRengiId { get; set; }
+        public bool BeyazSahTehditAltinda { get; set; }
+        public bool SiyahSahTehditAltinda { get; set; }
+        public bool BeyazSahMat { get; set; }
+        public bool SiyahSahMat { get; set; }
+        public bool OyunBittiMi { get; set; }
+
+        // Helper property
+        public string SiradakiOyuncuRengi => SiradakiOyuncuRengiId == 1 ? "Beyaz" : "Siyah";
+    }
+
 }
