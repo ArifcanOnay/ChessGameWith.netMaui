@@ -84,7 +84,18 @@ app.MapPost("/api/oyunlar", async (OyunOlusturRequest request, OyunYoneticisi oy
     try
     {
         var yeniOyun = await oyunYoneticisi.YeniOyunOlustur(request.BeyazOyuncuId, request.SiyahOyuncuId);
-        return Results.Created($"/api/oyunlar/{yeniOyun.OyunId}", yeniOyun);
+
+        // SADECE GEREKLİ BİLGİLERİ DÖNDÜR
+        var temizResponse = new
+        {
+            OyunId = yeniOyun.OyunId,
+            BeyazOyuncuId = yeniOyun.BeyazOyuncuId,
+            SiyahOyuncuId = yeniOyun.SiyahOyuncuId,
+            BaslangicTarihi = yeniOyun.BaslangicTarihi,
+            Durum = yeniOyun.Durum
+        };
+
+        return Results.Created($"/api/oyunlar/{yeniOyun.OyunId}", temizResponse);
     }
     catch (Exception ex)
     {
@@ -102,13 +113,20 @@ app.MapGet("/api/oyunlar/{oyunId}/taslar", async (Guid oyunId, SatrancDbContext 
     return Results.Ok(taslar);
 });
 
-// 5. Bir ta��n ge�erli hamlelerini getir
+// 5. Bir taşın geçerli hamlelerini getir
 app.MapGet("/api/oyunlar/{oyunId}/taslar/{tasId}/gecerli-hamleler", async (Guid oyunId, Guid tasId, OyunYoneticisi oyunYoneticisi) =>
 {
     try
     {
         var gecerliHamleler = await oyunYoneticisi.GecerliHamleleriGetir(oyunId, tasId);
-        return Results.Ok(gecerliHamleler);
+
+        // JSON formatını düzenle - x ve y koordinatlarını düzgün döndür
+        var duzenliHamleler = gecerliHamleler.Select(h => new {
+            x = h.X,
+            y = h.Y
+        }).ToList();
+
+        return Results.Ok(duzenliHamleler);
     }
     catch (Exception ex)
     {
@@ -121,15 +139,17 @@ app.MapPost("/api/oyunlar/{oyunId}/hamleler", async (Guid oyunId, HamleRequest r
 {
     try
     {
+        // TEK KİŞİLİK OYUN: Sıra kontrolünü devre dışı bırak veya esnetle
         var basarili = await oyunYoneticisi.HamleYap(oyunId, request.TasId, request.HedefX, request.HedefY);
+
         if (basarili)
-            return Results.Ok(new { message = "Hamle ba�ar�yla yap�ld�" });
+            return Results.Ok(new { message = "Hamle başarıyla yapıldı" });
         else
-            return Results.BadRequest("Ge�ersiz hamle");
+            return Results.BadRequest("Geçersiz hamle - Taş hareket kurallarına aykırı");
     }
     catch (Exception ex)
     {
-        return Results.BadRequest(ex.Message);
+        return Results.BadRequest($"Hamle hatası: {ex.Message}");
     }
 });
 

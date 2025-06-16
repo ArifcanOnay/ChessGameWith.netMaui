@@ -18,12 +18,18 @@ namespace SatranOyunumApp
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
-            // HttpClient ve Service'i ekle
-            builder.Services.AddHttpClient<SatrancApiService>();
-         
-            builder.Services.AddTransient<TestPage>();
+
+
+            // ✅ Service'leri DI Container'a kaydet
+            builder.Services.AddHttpClient();
+            builder.Services.AddScoped<ISatrancApiService, SatrancApiService>();
+
+            // ✅ Page'leri kaydet
+            builder.Services.AddTransient<GamePage>();
+            builder.Services.AddTransient<LoginPage>();
             builder.Services.AddTransient<KullanıcıKaydi>();
-            builder.Services.AddTransient<LoginPage>(); // Bu satırı ekleyin
+            builder.Services.AddTransient<SifreDegistirPage>();
+            builder.Services.AddTransient<TestPage>();
 #if DEBUG
             builder.Logging.AddDebug();
             

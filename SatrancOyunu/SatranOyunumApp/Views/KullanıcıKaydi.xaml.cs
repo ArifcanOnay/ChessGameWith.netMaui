@@ -1,12 +1,13 @@
-using SatranOyunumApp.Services;
+ï»¿using SatranOyunumApp.Services;
 
 namespace SatranOyunumApp.Views;
 
-public partial class KullanıcıKaydi : ContentPage
+public partial class KullanÄ±cÄ±Kaydi : ContentPage
 {
-    private readonly SatrancApiService _apiService;
+    private readonly ISatrancApiService _apiService; // âœ… Interface kullan
 
-    public KullanıcıKaydi(SatrancApiService apiService)
+    // âœ… Constructor'da Interface kullan
+    public KullanÄ±cÄ±Kaydi(ISatrancApiService apiService)
     {
         InitializeComponent();
         _apiService = apiService;
@@ -17,38 +18,38 @@ public partial class KullanıcıKaydi : ContentPage
         // Basit validation
         if (string.IsNullOrWhiteSpace(KullaniciAdiEntry.Text))
         {
-            await DisplayAlert("Hata", "Kullanıcı adı boş olamaz!", "Tamam");
+            await DisplayAlert("Hata", "KullanÄ±cÄ± adÄ± boÅŸ olamaz!", "Tamam");
             return;
         }
-        // *** YENİ: Email doğrulaması ***
+        // *** YENÄ°: Email doÄŸrulamasÄ± ***
         if (!EmailDogrula(EmailEntry.Text))
         {
-            await DisplayAlert("Geçersiz Email",
-                "Lütfen geçerli bir Gmail adresi giriniz.\nÖrnek: kullaniciadi@gmail.com",
+            await DisplayAlert("GeÃ§ersiz Email",
+                "LÃ¼tfen geÃ§erli bir Gmail adresi giriniz.\nÃ–rnek: kullaniciadi@gmail.com",
                 "Tamam");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(EmailEntry.Text))
         {
-            await DisplayAlert("Hata", "Email boş olamaz!", "Tamam");
+            await DisplayAlert("Hata", "Email boÅŸ olamaz!", "Tamam");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(SifreEntry.Text))
         {
-            await DisplayAlert("Hata", "Şifre boş olamaz!", "Tamam");
+            await DisplayAlert("Hata", "Åifre boÅŸ olamaz!", "Tamam");
             return;
         }
 
-        // Loading göster
+        // Loading gÃ¶ster
         var loadingButton = sender as Button;
         loadingButton.Text = "Kaydediliyor...";
         loadingButton.IsEnabled = false;
 
         try
         {
-            // API'ye kayıt isteği gönder
+            // API'ye kayÄ±t isteÄŸi gÃ¶nder
             var sonuc = await _apiService.KullaniciKaydet(
                 KullaniciAdiEntry.Text,
                 EmailEntry.Text,
@@ -57,7 +58,7 @@ public partial class KullanıcıKaydi : ContentPage
 
             if (sonuc.Basarili)
             {
-                await DisplayAlert("Başarılı", sonuc.Mesaj, "Tamam");
+                await DisplayAlert("BaÅŸarÄ±lÄ±", sonuc.Mesaj, "Tamam");
 
                 // Form'u temizle
                 KullaniciAdiEntry.Text = "";
@@ -84,20 +85,20 @@ public partial class KullanıcıKaydi : ContentPage
         }
     }
     /// <summary>
-    /// Email adresinin @gmail.com ile bitip bitmediğini kontrol eder
+    /// Email adresinin @gmail.com ile bitip bitmediÄŸini kontrol eder
     /// </summary>
     /// <param name="email">Kontrol edilecek email adresi</param>
-    /// <returns>Geçerli ise true, değilse false</returns>
+    /// <returns>GeÃ§erli ise true, deÄŸilse false</returns>
     private bool EmailDogrula(string email)
     {
-        // Null veya boş kontrol
+        // Null veya boÅŸ kontrol
         if (string.IsNullOrWhiteSpace(email))
             return false;
 
-        // Trim ile başındaki ve sonundaki boşlukları temizle
+        // Trim ile baÅŸÄ±ndaki ve sonundaki boÅŸluklarÄ± temizle
         email = email.Trim().ToLower();
 
-        // @ işareti var mı kontrol et
+        // @ iÅŸareti var mÄ± kontrol et
         if (!email.Contains("@"))
             return false;
 
@@ -105,12 +106,12 @@ public partial class KullanıcıKaydi : ContentPage
         if (!email.EndsWith("@gmail.com"))
             return false;
 
-        // @ işaretinden önce en az 1 karakter var mı kontrol et
+        // @ iÅŸaretinden Ã¶nce en az 1 karakter var mÄ± kontrol et
         string kullaniciAdi = email.Substring(0, email.IndexOf("@"));
         if (string.IsNullOrWhiteSpace(kullaniciAdi))
             return false;
 
-        // Kullanıcı adında geçersiz karakterler var mı kontrol et
+        // KullanÄ±cÄ± adÄ±nda geÃ§ersiz karakterler var mÄ± kontrol et
         if (kullaniciAdi.Contains(" ") || kullaniciAdi.Contains(".."))
             return false;
 

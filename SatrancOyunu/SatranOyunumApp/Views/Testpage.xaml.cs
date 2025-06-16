@@ -4,9 +4,10 @@ namespace SatranOyunumApp.Views;
 
 public partial class TestPage : ContentPage
 {
-    private readonly SatrancApiService _apiService;
+    private readonly ISatrancApiService _apiService;
 
-    public TestPage(SatrancApiService apiService)
+    // ? Constructor Injection
+    public TestPage(ISatrancApiService apiService)
     {
         InitializeComponent();
         _apiService = apiService;

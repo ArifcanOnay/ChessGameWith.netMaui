@@ -4,13 +4,14 @@ namespace SatranOyunumApp.Views;
 
 public partial class LoginPage : ContentPage
 {
-    private readonly SatrancApiService _apiService;
+    private readonly ISatrancApiService _apiService;
 
-    public LoginPage(SatrancApiService apiService)
+    public LoginPage(ISatrancApiService apiService)
     {
         InitializeComponent();
         _apiService = apiService;
     }
+
 
     private async void OnGirisYapClicked(object sender, EventArgs e)
     {

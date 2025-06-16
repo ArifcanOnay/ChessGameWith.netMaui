@@ -4,12 +4,13 @@ namespace SatranOyunumApp.Views;
 
 public partial class SifreDegistirPage : ContentPage
 {
-    private readonly SatrancApiService _apiService; // ApiService yerine SatrancApiService
+    private readonly ISatrancApiService _apiService; // ApiService yerine SatrancApiService
 
-    public SifreDegistirPage()
+    // ✅ Constructor Injection - Manuel HttpClient oluşturma KALDIRILDI
+    public SifreDegistirPage(ISatrancApiService apiService)
     {
         InitializeComponent();
-        _apiService = new SatrancApiService(new HttpClient()); // HttpClient parametresi gerekiyor
+        _apiService = apiService;
     }
 
     private async void OnSifreDegistirClicked(object sender, EventArgs e)
