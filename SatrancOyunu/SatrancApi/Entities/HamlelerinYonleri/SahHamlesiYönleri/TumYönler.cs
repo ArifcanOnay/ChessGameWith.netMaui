@@ -1,38 +1,36 @@
 ﻿using SatrancAPI.Entities.Models;
 
-namespace SatrancApi.Entities.HamlelerinYonleri.SahHamlesiYönleri
+namespace SatrancApi.Entities.HamlelerinYonleri.SahHamlesiYonleri
 {
-   
-        public class TumYonler
+    public class TumYonler
+    {
+        public static List<(int x, int y)> Hesapla(Tas sah, Tas[,] tahta)
         {
-            public static List<(int x, int y)> Hesapla(Tas tas, Tas[,] tahta)
+            var hamleler = new List<(int x, int y)>();
+
+            // Şah her yönde sadece 1 kare hareket edebilir
+            int[] deltaX = { -1, -1, -1, 0, 0, 1, 1, 1 };
+            int[] deltaY = { -1, 0, 1, -1, 1, -1, 0, 1 };
+
+            for (int i = 0; i < 8; i++)
             {
-                List<(int x, int y)> hamleler = new List<(int x, int y)>();
-                int x = tas.X;
-                int y = tas.Y;
+                int yeniX = sah.X + deltaX[i];
+                int yeniY = sah.Y + deltaY[i];
 
-                // 8 yön: sağ, sol, yukarı, aşağı, sağ-üst, sağ-alt, sol-üst, sol-alt
-                int[] xYonleri = { 1, -1, 0, 0, 1, 1, -1, -1 };
-                int[] yYonleri = { 0, 0, 1, -1, 1, -1, 1, -1 };
-
-                for (int yon = 0; yon < 8; yon++)
+                // Sınırlar içinde mi?
+                if (yeniX >= 0 && yeniX < 8 && yeniY >= 0 && yeniY < 8)
                 {
-                    int yeniX = x + xYonleri[yon];
-                    int yeniY = y + yYonleri[yon];
+                    var hedefTas = tahta[yeniX, yeniY];
 
-                    if (yeniX >= 0 && yeniX < 8 && yeniY >= 0 && yeniY < 8)
+                    // Hedef kare boş veya düşman taşı mı?
+                    if (hedefTas == null || hedefTas.renk != sah.renk)
                     {
-                        if (tahta[yeniX, yeniY] == null || tahta[yeniX, yeniY].renk != tas.renk)
-                        {
-                            // Şah kontrolü yapılmalı - şahın tehdit altında olduğu kareye gidemez
-                            // Basitlik için şimdilik bu kontrolü atlıyoruz
-                            hamleler.Add((yeniX, yeniY));
-                        }
+                        hamleler.Add((yeniX, yeniY));
                     }
                 }
-
-                return hamleler;
             }
+
+            return hamleler;
         }
     }
-
+}

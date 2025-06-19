@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SatrancAPI.Datas;
 using SatrancAPI.Entities.Models;
 using SatrancAPI.Services;
+#nullable disable 
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAuthorization();
@@ -38,7 +39,7 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// CORS politikas�n� etkinle�tir
+
 app.UseCors("AllowAll");
 
 // Swagger UI
@@ -53,7 +54,7 @@ app.UseAuthorization();
 
 // API endpoint'leri
 
-// 1. T�m oyunlar� getir
+// 1. Tüm oyunları getir
 app.MapGet("/api/oyunlar", async (SatrancDbContext db) =>
 {
     var oyunlar = await db.Oyunlar
@@ -63,7 +64,7 @@ app.MapGet("/api/oyunlar", async (SatrancDbContext db) =>
     return Results.Ok(oyunlar);
 });
 
-// 2. ID'ye g�re oyunu getir
+// 2. Idye göre oyun getir
 app.MapGet("/api/oyunlar/{id}", async (Guid id, SatrancDbContext db) =>
 {
     var oyun = await db.Oyunlar
@@ -78,7 +79,7 @@ app.MapGet("/api/oyunlar/{id}", async (Guid id, SatrancDbContext db) =>
     return Results.Ok(oyun);
 });
 
-// 3. Yeni oyun olu�tur
+// 3. Yeni oyun oluştur
 app.MapPost("/api/oyunlar", async (OyunOlusturRequest request, OyunYoneticisi oyunYoneticisi) =>
 {
     try
@@ -103,7 +104,7 @@ app.MapPost("/api/oyunlar", async (OyunOlusturRequest request, OyunYoneticisi oy
     }
 });
 
-// 4. Bir oyundaki t�m ta�lar� getir
+// 4. Bir oyundaki tüm taşları getir
 app.MapGet("/api/oyunlar/{oyunId}/taslar", async (Guid oyunId, SatrancDbContext db) =>
 {
     var taslar = await db.Taslar
@@ -164,7 +165,7 @@ app.MapGet("/api/oyunlar/{oyunId}/hamleler", async (Guid oyunId, SatrancDbContex
     return Results.Ok(hamleler);
 });
 
-// 8. Yeni oyuncu olu�tur
+// 8. Yeni oyuncu oluştur
 app.MapPost("/api/oyuncular", async (OyuncuOlusturRequest request, SatrancDbContext db) =>
 {
     var oyuncu = new Oyuncu
@@ -179,13 +180,13 @@ app.MapPost("/api/oyuncular", async (OyuncuOlusturRequest request, SatrancDbCont
     return Results.Created($"/api/oyuncular/{oyuncu.Id}", oyuncu);
 });
 
-// 9. T�m oyuncular� getir
+// 9. Tüm oyuncuları getir
 app.MapGet("/api/oyuncular", async (SatrancDbContext db) =>
 {
     var oyuncular = await db.Oyuncular.ToListAsync();
     return Results.Ok(oyuncular);
 });
-// Oyuncu g�ncelleme
+// Oyuncu güncelleme
 app.MapPut("/api/oyuncular/{id}", async (Guid id, OyuncuOlusturRequest request, SatrancDbContext db) =>
 {
     var mevcutOyuncu = await db.Oyuncular.FindAsync(id);
@@ -211,64 +212,156 @@ app.MapDelete("/api/oyuncular/{id}", async (Guid id, SatrancDbContext db) =>
     return Results.NoContent();
 });
 
-// 10. Oyun durumunu getir (şah çekme, şah mat, vb.)
+
 app.MapGet("/api/oyunlar/{oyunId}/durum", async (Guid oyunId, OyunYoneticisi oyunYoneticisi, SatrancDbContext db) =>
 {
     var oyun = await db.Oyunlar.FindAsync(oyunId);
     if (oyun == null)
         return Results.NotFound();
-    
+
     await oyunYoneticisi.TahtayiYukle(oyunId);
-    
+
     // Son hamleyi al
     var sonHamle = await db.Hamleler
         .Where(h => h.OyunId == oyunId)
         .OrderByDescending(h => h.HamleTarihi)
         .FirstOrDefaultAsync();
-    
+
     // Sıradaki oyuncuyu belirle
     bool beyazSirasi = sonHamle == null || sonHamle.OyuncuId == oyun.SiyahOyuncuId;
     Renk siradakiRenk = beyazSirasi ? Renk.Beyaz : Renk.Siyah;
-    
-    // Şah çekme durumu
+
+    //
     bool beyazSahTehdit = oyunYoneticisi.SahTehditAltindaMi(Renk.Beyaz);
     bool siyahSahTehdit = oyunYoneticisi.SahTehditAltindaMi(Renk.Siyah);
-    
-    // Şah mat durumu
+
+    //
     bool beyazSahMat = beyazSahTehdit && oyunYoneticisi.SahMatMi(Renk.Beyaz);
     bool siyahSahMat = siyahSahTehdit && oyunYoneticisi.SahMatMi(Renk.Siyah);
-    
+
+    // 
+    bool oyunBitti = beyazSahMat || siyahSahMat;
+    string? kazanan = null;
+
+    if (beyazSahMat)
+    {
+        kazanan = "Siyah";
+        oyun.Durum = Durum.Bitiyor;
+        oyun.KazananOyuncu = "Siyah";
+        oyun.BitisNedeni = "Şah Mat";
+        oyun.BitisTarihi = DateTime.Now;
+    }
+    else if (siyahSahMat)
+    {
+        kazanan = "Beyaz";
+        oyun.Durum = Durum.Bitiyor;
+        oyun.KazananOyuncu = "Beyaz";
+        oyun.BitisNedeni = "Şah Mat";
+        oyun.BitisTarihi = DateTime.Now;
+    }
+
+    if (oyunBitti)
+    {
+        await db.SaveChangesAsync();
+    }
+
+    // Debug logları
+    Console.WriteLine($"Beyaz şah tehdit: {beyazSahTehdit}, Siyah şah tehdit: {siyahSahTehdit}");
+    Console.WriteLine($"Beyaz şah mat: {beyazSahMat}, Siyah şah mat: {siyahSahMat}");
+    Console.WriteLine($"Oyun bitti: {oyunBitti}, Kazanan: {kazanan}");
+
     return Results.Ok(new
     {
         Durum = oyun.Durum,
-        SiradakiOyuncuRengi = siradakiRenk,
-        BeyazSahTehditAltinda = beyazSahTehdit, 
+        SiradakiOyuncuRengi = (int)siradakiRenk,
+        BeyazSahTehditAltinda = beyazSahTehdit,
         SiyahSahTehditAltinda = siyahSahTehdit,
         BeyazSahMat = beyazSahMat,
         SiyahSahMat = siyahSahMat,
-        OyunBittiMi = oyun.Durum != Durum.Oynaniyor
+        OyunBittiMi = oyunBitti,
+        Kazanan = kazanan,
+        BitisNedeni = oyun.BitisNedeni
     });
 });
 
-// 11. Piyon terfi etme (Promotion)
+// 11. Piyon terfi etme (Promotion) - GÜNCELLENDİ
 app.MapPost("/api/oyunlar/{oyunId}/piyon-terfi", async (Guid oyunId, PiyonTerfiRequest request, SatrancDbContext db) =>
 {
-    // Taşın var olduğunu ve piyon olduğunu kontrol et
-    var tas = await db.Taslar.FirstOrDefaultAsync(t => t.TasId == request.PiyonId && t.AktifMi);
-    if (tas == null || tas.turu != TasTuru.Piyon)
-        return Results.BadRequest("Geçersiz piyon");
-    
-    // Piyonun terfi hattında olduğunu kontrol et (beyaz için 0, siyah için 7)
-    bool terfiPozisyonundaMi = (tas.renk == Renk.Beyaz && tas.X == 0) || (tas.renk == Renk.Siyah && tas.X == 7);
-    if (!terfiPozisyonundaMi)
-        return Results.BadRequest("Piyon terfi pozisyonunda değil");
-    
-    // Piyonu istenen türe yükselt
-    tas.turu = request.YeniTasTuru;
-    
-    await db.SaveChangesAsync();
-    return Results.Ok(new { message = "Piyon başarıyla terfi edildi", tas = tas });
+    try
+    {
+        // Taşın var olduğunu ve piyon olduğunu kontrol et
+        var tas = await db.Taslar.FirstOrDefaultAsync(t => t.TasId == request.PiyonId && t.AktifMi);
+        if (tas == null || tas.turu != TasTuru.Piyon)
+            return Results.BadRequest("Geçersiz piyon");
+
+        // Piyonun terfi hattında olduğunu kontrol et (beyaz için 0, siyah için 7)
+        bool terfiPozisyonundaMi = (tas.renk == Renk.Beyaz && tas.X == 0) || (tas.renk == Renk.Siyah && tas.X == 7);
+        if (!terfiPozisyonundaMi)
+            return Results.BadRequest("Piyon terfi pozisyonunda değil");
+
+        // ✅ YENİ: Geçerli terfi türlerini kontrol et
+        if (request.YeniTasTuru == TasTuru.Piyon || request.YeniTasTuru == TasTuru.Şah)
+            return Results.BadRequest("Piyon, piyon veya şah'a terfi edemez");
+
+        // Piyonu istenen türe yükselt
+        tas.turu = request.YeniTasTuru;
+
+        // ✅ YENİ: Taş sembolünü güncelle
+        tas.TasSimgesi = TasSimbolunuGetir(request.YeniTasTuru, tas.renk);
+
+        await db.SaveChangesAsync();
+
+        return Results.Ok(new
+        {
+            message = "Piyon başarıyla terfi edildi",
+            tas = new
+            {
+                TasId = tas.TasId,
+                X = tas.X,
+                Y = tas.Y,
+                turu = tas.turu,
+                TasSimgesi = tas.TasSimgesi,
+                renk = tas.renk
+            }
+        });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest($"Terfi hatası: {ex.Message}");
+    }
 });
+
+//
+// ✅ YENİ: Taş sembolü helper metodu
+string TasSimbolunuGetir(TasTuru tur, Renk renk)
+{
+    if (renk == Renk.Beyaz)
+    {
+        return tur switch
+        {
+            TasTuru.Piyon => "♙",
+            TasTuru.Kale => "♖",
+            TasTuru.At => "♘",
+            TasTuru.Fil => "♗",
+            TasTuru.Vezir => "♕",
+            TasTuru.Şah => "♔",
+            _ => "?"
+        };
+    }
+    else // Siyah
+    {
+        return tur switch
+        {
+            TasTuru.Piyon => "♟",
+            TasTuru.Kale => "♜",
+            TasTuru.At => "♞",
+            TasTuru.Fil => "♝",
+            TasTuru.Vezir => "♛",
+            TasTuru.Şah => "♚",
+            _ => "?"
+        };
+    }
+}
 // Kullanıcı kayıt endpoint'i
 app.MapPost("/api/kullanicilar/kayit", async (KullaniciKayitRequest request, SatrancDbContext db) =>
 {
@@ -339,6 +432,7 @@ app.MapPut("/api/kullanicilar/sifre-degistir", async (SifreEmailDegistirRequest 
         return Results.Problem($"Hata: {ex.Message}");
     }
 });
+
 app.MapPost("/api/kullanicilar/login", async (LoginRequest request, SatrancDbContext db) =>
 {
     // Kullanıcıyı email ile bul
@@ -370,7 +464,8 @@ app.MapPost("/api/kullanicilar/login", async (LoginRequest request, SatrancDbCon
 
 app.Run();
 
-// API istekleri için basit sınıflar (DTO)
+
+
 public class LoginRequest
 {
     public string Email { get; set; }

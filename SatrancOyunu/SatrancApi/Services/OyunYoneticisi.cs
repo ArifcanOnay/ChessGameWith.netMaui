@@ -10,6 +10,7 @@ namespace SatrancAPI.Services
     {
         private readonly SatrancDbContext _dbContext;
         private readonly TahtaYoneticisi _tahtaYoneticisi;
+        private Guid _aktifOyunId;
 
         public OyunYoneticisi(SatrancDbContext dbContext, TahtaYoneticisi tahtaYoneticisi)
         {
@@ -37,24 +38,20 @@ namespace SatrancAPI.Services
                 Durum = Durum.Oynaniyor,
                 BeyazSkor = 0,
                 SiyahSkor = 0,
-                SiraKimin = 0, // Beyaz başlar
+                SiraKimin = 0,
                 ToplamHamleSayisi = 0,
                 SahDurumu = false
             };
 
             _dbContext.Oyunlar.Add(oyun);
-
-            // Başlangıç taşlarını oluştur
             BaslangicTaslariniOlustur(oyun);
-
             await _dbContext.SaveChangesAsync();
             return oyun;
         }
 
-        // Başlangıç taşlarını oluşturur
         private void BaslangicTaslariniOlustur(Oyun oyun)
         {
-            // Beyaz piyonlar
+            // BEYAZ PİYONLAR
             for (int y = 0; y < 8; y++)
             {
                 _dbContext.Taslar.Add(new Tas
@@ -67,21 +64,42 @@ namespace SatrancAPI.Services
                     X = 6,
                     Y = y,
                     AktifMi = true,
-                    HicHareketEtmediMi = true
+                    HicHareketEtmediMi = true,
+                    TasSimgesi = "♙"
                 });
             }
 
-            // Beyaz diğer taşlar
-            _dbContext.Taslar.Add(new Tas { TasId = Guid.NewGuid(), OyunId = oyun.OyunId, OyuncuId = oyun.BeyazOyuncuId, renk = Renk.Beyaz, turu = TasTuru.Kale, X = 7, Y = 0, AktifMi = true, HicHareketEtmediMi = true });
-            _dbContext.Taslar.Add(new Tas { TasId = Guid.NewGuid(), OyunId = oyun.OyunId, OyuncuId = oyun.BeyazOyuncuId, renk = Renk.Beyaz, turu = TasTuru.At, X = 7, Y = 1, AktifMi = true, HicHareketEtmediMi = true });
-            _dbContext.Taslar.Add(new Tas { TasId = Guid.NewGuid(), OyunId = oyun.OyunId, OyuncuId = oyun.BeyazOyuncuId, renk = Renk.Beyaz, turu = TasTuru.Fil, X = 7, Y = 2, AktifMi = true, HicHareketEtmediMi = true });
-            _dbContext.Taslar.Add(new Tas { TasId = Guid.NewGuid(), OyunId = oyun.OyunId, OyuncuId = oyun.BeyazOyuncuId, renk = Renk.Beyaz, turu = TasTuru.Vezir, X = 7, Y = 3, AktifMi = true, HicHareketEtmediMi = true });
-            _dbContext.Taslar.Add(new Tas { TasId = Guid.NewGuid(), OyunId = oyun.OyunId, OyuncuId = oyun.BeyazOyuncuId, renk = Renk.Beyaz, turu = TasTuru.Şah, X = 7, Y = 4, AktifMi = true, HicHareketEtmediMi = true });
-            _dbContext.Taslar.Add(new Tas { TasId = Guid.NewGuid(), OyunId = oyun.OyunId, OyuncuId = oyun.BeyazOyuncuId, renk = Renk.Beyaz, turu = TasTuru.Fil, X = 7, Y = 5, AktifMi = true, HicHareketEtmediMi = true });
-            _dbContext.Taslar.Add(new Tas { TasId = Guid.NewGuid(), OyunId = oyun.OyunId, OyuncuId = oyun.BeyazOyuncuId, renk = Renk.Beyaz, turu = TasTuru.At, X = 7, Y = 6, AktifMi = true, HicHareketEtmediMi = true });
-            _dbContext.Taslar.Add(new Tas { TasId = Guid.NewGuid(), OyunId = oyun.OyunId, OyuncuId = oyun.BeyazOyuncuId, renk = Renk.Beyaz, turu = TasTuru.Kale, X = 7, Y = 7, AktifMi = true, HicHareketEtmediMi = true });
+            // BEYAZ DİĞER TAŞLAR
+            var beyazTaslar = new[]
+            {
+                new { Tur = TasTuru.Kale, Sembol = "♖", Y = 0 },
+                new { Tur = TasTuru.At, Sembol = "♘", Y = 1 },
+                new { Tur = TasTuru.Fil, Sembol = "♗", Y = 2 },
+                new { Tur = TasTuru.Vezir, Sembol = "♕", Y = 3 },
+                new { Tur = TasTuru.Şah, Sembol = "♔", Y = 4 },
+                new { Tur = TasTuru.Fil, Sembol = "♗", Y = 5 },
+                new { Tur = TasTuru.At, Sembol = "♘", Y = 6 },
+                new { Tur = TasTuru.Kale, Sembol = "♖", Y = 7 }
+            };
 
-            // Siyah piyonlar
+            foreach (var tasInfo in beyazTaslar)
+            {
+                _dbContext.Taslar.Add(new Tas
+                {
+                    TasId = Guid.NewGuid(),
+                    OyunId = oyun.OyunId,
+                    OyuncuId = oyun.BeyazOyuncuId,
+                    renk = Renk.Beyaz,
+                    turu = tasInfo.Tur,
+                    X = 7,
+                    Y = tasInfo.Y,
+                    AktifMi = true,
+                    HicHareketEtmediMi = true,
+                    TasSimgesi = tasInfo.Sembol
+                });
+            }
+
+            // SİYAH PİYONLAR
             for (int y = 0; y < 8; y++)
             {
                 _dbContext.Taslar.Add(new Tas
@@ -94,24 +112,45 @@ namespace SatrancAPI.Services
                     X = 1,
                     Y = y,
                     AktifMi = true,
-                    HicHareketEtmediMi = true
+                    HicHareketEtmediMi = true,
+                    TasSimgesi = "♟"
                 });
             }
 
-            // Siyah diğer taşlar
-            _dbContext.Taslar.Add(new Tas { TasId = Guid.NewGuid(), OyunId = oyun.OyunId, OyuncuId = oyun.SiyahOyuncuId, renk = Renk.Siyah, turu = TasTuru.Kale, X = 0, Y = 0, AktifMi = true, HicHareketEtmediMi = true });
-            _dbContext.Taslar.Add(new Tas { TasId = Guid.NewGuid(), OyunId = oyun.OyunId, OyuncuId = oyun.SiyahOyuncuId, renk = Renk.Siyah, turu = TasTuru.At, X = 0, Y = 1, AktifMi = true, HicHareketEtmediMi = true });
-            _dbContext.Taslar.Add(new Tas { TasId = Guid.NewGuid(), OyunId = oyun.OyunId, OyuncuId = oyun.SiyahOyuncuId, renk = Renk.Siyah, turu = TasTuru.Fil, X = 0, Y = 2, AktifMi = true, HicHareketEtmediMi = true });
-            _dbContext.Taslar.Add(new Tas { TasId = Guid.NewGuid(), OyunId = oyun.OyunId, OyuncuId = oyun.SiyahOyuncuId, renk = Renk.Siyah, turu = TasTuru.Vezir, X = 0, Y = 3, AktifMi = true, HicHareketEtmediMi = true });
-            _dbContext.Taslar.Add(new Tas { TasId = Guid.NewGuid(), OyunId = oyun.OyunId, OyuncuId = oyun.SiyahOyuncuId, renk = Renk.Siyah, turu = TasTuru.Şah, X = 0, Y = 4, AktifMi = true, HicHareketEtmediMi = true });
-            _dbContext.Taslar.Add(new Tas { TasId = Guid.NewGuid(), OyunId = oyun.OyunId, OyuncuId = oyun.SiyahOyuncuId, renk = Renk.Siyah, turu = TasTuru.Fil, X = 0, Y = 5, AktifMi = true, HicHareketEtmediMi = true });
-            _dbContext.Taslar.Add(new Tas { TasId = Guid.NewGuid(), OyunId = oyun.OyunId, OyuncuId = oyun.SiyahOyuncuId, renk = Renk.Siyah, turu = TasTuru.At, X = 0, Y = 6, AktifMi = true, HicHareketEtmediMi = true });
-            _dbContext.Taslar.Add(new Tas { TasId = Guid.NewGuid(), OyunId = oyun.OyunId, OyuncuId = oyun.SiyahOyuncuId, renk = Renk.Siyah, turu = TasTuru.Kale, X = 0, Y = 7, AktifMi = true, HicHareketEtmediMi = true });
+            // SİYAH DİĞER TAŞLAR
+            var siyahTaslar = new[]
+            {
+                new { Tur = TasTuru.Kale, Sembol = "♜", Y = 0 },
+                new { Tur = TasTuru.At, Sembol = "♞", Y = 1 },
+                new { Tur = TasTuru.Fil, Sembol = "♝", Y = 2 },
+                new { Tur = TasTuru.Vezir, Sembol = "♛", Y = 3 },
+                new { Tur = TasTuru.Şah, Sembol = "♚", Y = 4 },
+                new { Tur = TasTuru.Fil, Sembol = "♝", Y = 5 },
+                new { Tur = TasTuru.At, Sembol = "♞", Y = 6 },
+                new { Tur = TasTuru.Kale, Sembol = "♜", Y = 7 }
+            };
+
+            foreach (var tasInfo in siyahTaslar)
+            {
+                _dbContext.Taslar.Add(new Tas
+                {
+                    TasId = Guid.NewGuid(),
+                    OyunId = oyun.OyunId,
+                    OyuncuId = oyun.SiyahOyuncuId,
+                    renk = Renk.Siyah,
+                    turu = tasInfo.Tur,
+                    X = 0,
+                    Y = tasInfo.Y,
+                    AktifMi = true,
+                    HicHareketEtmediMi = true,
+                    TasSimgesi = tasInfo.Sembol
+                });
+            }
         }
 
-        // Bir oyunun tahta durumunu veritabanından alır ve tahta yöneticisine yükler
         public async Task TahtayiYukle(Guid oyunId)
         {
+            _aktifOyunId = oyunId;
             var taslar = await _dbContext.Taslar
                 .Where(t => t.OyunId == oyunId && t.AktifMi)
                 .ToListAsync();
@@ -119,26 +158,132 @@ namespace SatrancAPI.Services
             _tahtaYoneticisi.TahtayiOlustur(taslar);
         }
 
-        // ✅ Tahta döndürür
         public async Task<Tas[,]> TahtayiGetir(Guid oyunId)
         {
             await TahtayiYukle(oyunId);
             return _tahtaYoneticisi.TahtayiGetir();
         }
 
-        // ✅ Şah tehdit durumunu kontrol et
         public bool SahTehditAltindaMi(Renk sahRengi)
         {
-            return _tahtaYoneticisi.SahTehditAltindaMi(sahRengi);
+            try
+            {
+                var sah = _dbContext.Taslar.FirstOrDefault(t =>
+                    t.OyunId == _aktifOyunId &&
+                    t.AktifMi &&
+                    t.renk == sahRengi &&
+                    t.turu == TasTuru.Şah);
+
+                if (sah == null)
+                    return false;
+
+                var dusmanTaslari = _dbContext.Taslar
+                    .Where(t => t.OyunId == _aktifOyunId && t.AktifMi && t.renk != sahRengi)
+                    .ToList();
+
+                foreach (var dusmanTas in dusmanTaslari)
+                {
+                    var gecerliHamleler = GecerliHamleleriGetir(dusmanTas);
+
+                    if (gecerliHamleler.Any(h => h.X == sah.X && h.Y == sah.Y))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Şah tehdit kontrolü hatası: {ex.Message}");
+                return false;
+            }
         }
 
-        // ✅ Şah mat durumunu kontrol et
-        public bool SahMatMi(Renk sahRengi)
+        public bool SahMatMi(Renk renk)
         {
-            return _tahtaYoneticisi.SahMatMi(sahRengi);
+            try
+            {
+                if (!SahTehditAltindaMi(renk))
+                    return false;
+
+                var taslar = _dbContext.Taslar
+                    .Where(t => t.OyunId == _aktifOyunId && t.AktifMi && t.renk == renk)
+                    .ToList();
+
+                foreach (var tas in taslar)
+                {
+                    var gecerliHamleler = GecerliHamleleriGetir(tas);
+
+                    foreach (var hamle in gecerliHamleler)
+                    {
+                        if (HamleIleŞahKurtulurMu(tas, hamle.X, hamle.Y, renk))
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Şah-mat kontrolü hatası: {ex.Message}");
+                return false;
+            }
         }
 
-        // Hamle yapar - ✅ TEK KİŞİLİK OYUN DESTEĞİ EKLENDİ
+        private bool HamleIleŞahKurtulurMu(Tas tas, int hedefX, int hedefY, Renk sahRengi)
+        {
+            try
+            {
+                int eskiX = tas.X;
+                int eskiY = tas.Y;
+
+                var hedefTas = _dbContext.Taslar
+                    .FirstOrDefault(t => t.X == hedefX && t.Y == hedefY && t.AktifMi && t.OyunId == _aktifOyunId);
+
+                bool hedefTasAktifDurumu = hedefTas?.AktifMi ?? false;
+
+                tas.X = hedefX;
+                tas.Y = hedefY;
+                if (hedefTas != null)
+                    hedefTas.AktifMi = false;
+
+                TahtayiYukle(_aktifOyunId).Wait();
+                bool sahHalaTehditAltinda = SahTehditAltindaMi(sahRengi);
+
+                tas.X = eskiX;
+                tas.Y = eskiY;
+                if (hedefTas != null)
+                    hedefTas.AktifMi = hedefTasAktifDurumu;
+
+                TahtayiYukle(_aktifOyunId).Wait();
+
+                return !sahHalaTehditAltinda;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Hamle simülasyonu hatası: {ex.Message}");
+                return false;
+            }
+        }
+
+        private List<(int X, int Y)> GecerliHamleleriGetir(Tas tas)
+        {
+            try
+            {
+                var tahtaHamleler = _tahtaYoneticisi.GecerliHamleleriGetir(tas);
+                return tahtaHamleler.Select(h => (h.x, h.y)).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Geçerli hamleler alma hatası: {ex.Message}");
+                return new List<(int X, int Y)>();
+            }
+        }
+
+        // ✅ GELİŞTİRİLMİŞ: ROK DESTEKLİ HAMLE YAPMA
         public async Task<bool> HamleYap(Guid oyunId, Guid tasId, int hedefX, int hedefY)
         {
             var oyun = await _dbContext.Oyunlar.FindAsync(oyunId);
@@ -153,12 +298,18 @@ namespace SatrancAPI.Services
             if (tas == null)
                 return false;
 
-            // ✅ TEK KİŞİLİK OYUN KONTROLÜ
+            // ✅ ROK HAMLESİ KONTROLÜ
+            if (tas.turu == TasTuru.Şah && Math.Abs(hedefY - tas.Y) == 2)
+            {
+                Console.WriteLine("Rok hamlesi algılandı!");
+                return await RokHamlesiYap(tas, hedefX, hedefY);
+            }
+
+            // TEK KİŞİLİK OYUN KONTROLÜ
             bool tekKislikOyun = oyun.BeyazOyuncuId == oyun.SiyahOyuncuId;
 
             if (!tekKislikOyun)
             {
-                // Sıra kontrolü - sadece çok oyunculu oyunlarda
                 var sonHamle = await _dbContext.Hamleler
                     .Where(h => h.OyunId == oyunId)
                     .OrderByDescending(h => h.HamleTarihi)
@@ -170,15 +321,12 @@ namespace SatrancAPI.Services
                     return false;
             }
 
-            // Hedef konumdaki taş (varsa)
             var hedefTas = await _dbContext.Taslar
                 .FirstOrDefaultAsync(t => t.OyunId == oyunId && t.X == hedefX && t.Y == hedefY && t.AktifMi);
 
-            // Hamle yap
             if (!_tahtaYoneticisi.HamleYap(tas, hedefX, hedefY))
                 return false;
 
-            // Taşın konumunu güncelle
             int eskiX = tas.X;
             int eskiY = tas.Y;
             tas.X = hedefX;
@@ -186,16 +334,13 @@ namespace SatrancAPI.Services
             tas.HicHareketEtmediMi = false;
             tas.SonHareketTarihi = DateTime.Now;
 
-            // Hedef konumdaki taş varsa ele al
             if (hedefTas != null)
             {
                 hedefTas.AktifMi = false;
             }
 
-            // Hamle sayısını artır
             oyun.ToplamHamleSayisi++;
 
-            // Hamle kaydet
             var hamle = new Hamle
             {
                 HamleId = Guid.NewGuid(),
@@ -211,26 +356,21 @@ namespace SatrancAPI.Services
             };
 
             _dbContext.Hamleler.Add(hamle);
-
             await _dbContext.SaveChangesAsync();
             return true;
         }
 
-        // Geçerli hamleleri getir - ✅ DÜZELTME: Koordinat listesi döndürür
         public async Task<List<Koordinat>> GecerliHamleleriGetir(Guid oyunId, Guid tasId)
         {
-            // Tahtayı yükle
             await TahtayiYukle(oyunId);
             var tas = await _dbContext.Taslar.FirstOrDefaultAsync(t => t.TasId == tasId && t.AktifMi);
             if (tas == null)
                 return new List<Koordinat>();
 
-            // TahtaYoneticisi'nden tuple listesi al ve Koordinat listesine çevir
             var hamleler = _tahtaYoneticisi.GecerliHamleleriGetir(tas);
             return hamleler.Select(h => new Koordinat(h.x, h.y)).ToList();
         }
 
-        // ✅ Oyunu bitir
         public async Task<bool> OyunuBitir(Guid oyunId, string bitisNedeni, string kazanan = null)
         {
             var oyun = await _dbContext.Oyunlar.FindAsync(oyunId);
@@ -248,6 +388,162 @@ namespace SatrancAPI.Services
 
             await _dbContext.SaveChangesAsync();
             return true;
+        }
+
+        // ✅ GELİŞTİRİLMİŞ ROK HAMLESİ YAPMA
+        private async Task<bool> RokHamlesiYap(Tas sah, int hedefX, int hedefY)
+        {
+            try
+            {
+                // ✅ GELİŞTİRİLMİŞ ROK KONTROLÜ
+                bool kisaRok = hedefY > sah.Y;
+
+                // ✅ YENİ: Şah tehdit altında mı kontrol et
+                if (SahTehditAltindaMi(sah.renk))
+                {
+                    Console.WriteLine("Rok reddedildi: Şah tehdit altında");
+                    return false;
+                }
+
+                // ✅ YENİ: Rok yolundaki kareler tehdit altında mı?
+                if (kisaRok)
+                {
+                    if (KareTehditAltindaMi(sah.X, sah.Y + 1, sah.renk) ||
+                        KareTehditAltindaMi(sah.X, sah.Y + 2, sah.renk))
+                    {
+                        Console.WriteLine("Kısa rok reddedildi: Geçiş yolu tehdit altında");
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (KareTehditAltindaMi(sah.X, sah.Y - 1, sah.renk) ||
+                        KareTehditAltindaMi(sah.X, sah.Y - 2, sah.renk))
+                    {
+                        Console.WriteLine("Uzun rok reddedildi: Geçiş yolu tehdit altında");
+                        return false;
+                    }
+                }
+
+                int eskiSahY = sah.Y;
+                sah.Y = hedefY;
+                sah.HicHareketEtmediMi = false;
+                sah.SonHareketTarihi = DateTime.Now;
+
+                if (kisaRok)
+                {
+                    var kale = await _dbContext.Taslar
+                        .FirstOrDefaultAsync(t => t.X == sah.X && t.Y == eskiSahY + 3 && t.AktifMi && t.OyunId == _aktifOyunId);
+
+                    if (kale != null)
+                    {
+                        kale.Y = eskiSahY + 1;
+                        kale.HicHareketEtmediMi = false;
+                        kale.SonHareketTarihi = DateTime.Now;
+                        Console.WriteLine($"Kısa rok: Kale {eskiSahY + 3} → {eskiSahY + 1}");
+                    }
+                }
+                else
+                {
+                    var kale = await _dbContext.Taslar
+                        .FirstOrDefaultAsync(t => t.X == sah.X && t.Y == eskiSahY - 4 && t.AktifMi && t.OyunId == _aktifOyunId);
+
+                    if (kale != null)
+                    {
+                        kale.Y = eskiSahY - 1;
+                        kale.HicHareketEtmediMi = false;
+                        kale.SonHareketTarihi = DateTime.Now;
+                        Console.WriteLine($"Uzun rok: Kale {eskiSahY - 4} → {eskiSahY - 1}");
+                    }
+                }
+
+                var hamle = new Hamle
+                {
+                    HamleId = Guid.NewGuid(),
+                    OyunId = sah.OyunId,
+                    OyuncuId = sah.OyuncuId,
+                    TasId = sah.TasId,
+                    BaslangicX = sah.X,
+                    BaslangicY = eskiSahY,
+                    HedefX = hedefX,
+                    HedefY = hedefY,
+                    HamleTarihi = DateTime.Now,
+                    Notasyon = kisaRok ? "O-O" : "O-O-O",
+                    RokMu = true
+                };
+
+                _dbContext.Hamleler.Add(hamle);
+                await _dbContext.SaveChangesAsync();
+
+                Console.WriteLine($"Rok başarılı: {(kisaRok ? "Kısa" : "Uzun")} rok tamamlandı");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Rok hamlesi hatası: {ex.Message}");
+                return false;
+            }
+        }
+
+        // ✅ YENİ: Kare tehdit kontrolü metodu
+        private bool KareTehditAltindaMi(int x, int y, Renk sahRengi)
+        {
+            try
+            {
+                var dusmanTaslari = _dbContext.Taslar
+                    .Where(t => t.OyunId == _aktifOyunId && t.AktifMi && t.renk != sahRengi)
+                    .ToList();
+
+                foreach (var dusmanTas in dusmanTaslari)
+                {
+                    var gecerliHamleler = GecerliHamleleriGetir(dusmanTas);
+                    if (gecerliHamleler.Any(h => h.X == x && h.Y == y))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Kare tehdit kontrolü hatası: {ex.Message}");
+                return true;
+            }
+        }
+
+        public List<(int X, int Y)> SahiKurtaranHamleler(Guid tasId, Renk sahRengi)
+        {
+            try
+            {
+                if (!SahTehditAltindaMi(sahRengi))
+                {
+                    var tas = _dbContext.Taslar.FirstOrDefault(t => t.TasId == tasId && t.AktifMi);
+                    return tas != null ? GecerliHamleleriGetir(tas) : new List<(int X, int Y)>();
+                }
+
+                var kurtaranHamleler = new List<(int X, int Y)>();
+                var secilenTas = _dbContext.Taslar.FirstOrDefault(t => t.TasId == tasId && t.AktifMi);
+
+                if (secilenTas == null) return kurtaranHamleler;
+
+                var tumHamleler = GecerliHamleleriGetir(secilenTas);
+
+                foreach (var hamle in tumHamleler)
+                {
+                    if (HamleIleŞahKurtulurMu(secilenTas, hamle.X, hamle.Y, sahRengi))
+                    {
+                        kurtaranHamleler.Add(hamle);
+                    }
+                }
+
+                return kurtaranHamleler;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Şah kurtaran hamleler hatası: {ex.Message}");
+                return new List<(int X, int Y)>();
+            }
         }
     }
 }

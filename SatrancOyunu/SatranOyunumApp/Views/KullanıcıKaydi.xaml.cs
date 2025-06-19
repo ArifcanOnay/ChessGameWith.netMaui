@@ -4,9 +4,9 @@ namespace SatranOyunumApp.Views;
 
 public partial class KullanıcıKaydi : ContentPage
 {
-    private readonly ISatrancApiService _apiService; // ✅ Interface kullan
+    private readonly ISatrancApiService _apiService; 
 
-    // ✅ Constructor'da Interface kullan
+    // Constructor'da Interface kullan
     public KullanıcıKaydi(ISatrancApiService apiService)
     {
         InitializeComponent();
@@ -21,7 +21,7 @@ public partial class KullanıcıKaydi : ContentPage
             await DisplayAlert("Hata", "Kullanıcı adı boş olamaz!", "Tamam");
             return;
         }
-        // *** YENİ: Email doğrulaması ***
+        // Email doğrulaması 
         if (!EmailDogrula(EmailEntry.Text))
         {
             await DisplayAlert("Geçersiz Email",

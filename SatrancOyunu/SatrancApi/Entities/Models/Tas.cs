@@ -11,7 +11,9 @@
 
         public int Y { get; set; }
         public bool AktifMi { get; set; }
-   
+        public string TasSimgesi { get; set; } = "";
+
+
         public bool HicHareketEtmediMi { get; set; } = true; // Rök ve en passant için
         public DateTime? SonHareketTarihi { get; set; }
         public int? EnPassantTuru { get; set; } // Hangi turda en passant oldu

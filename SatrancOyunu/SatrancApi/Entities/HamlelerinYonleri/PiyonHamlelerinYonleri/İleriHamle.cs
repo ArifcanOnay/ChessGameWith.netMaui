@@ -4,19 +4,55 @@ namespace SatrancAPI.Entities.HamlelerinYonleri.PiyonHamlelerinYonleri
 {
     public class İleriHamle
     {
-        public static List<(int x, int y)> Hesapla(Tas tas, Tas[,] tahta)
+        // Piyonun ileriye doğru hamle yapıp yapamayacağını kontrol eder.
+        public static bool GecerliMi(Tas tas, Tas[,] tahta)
         {
-            var hamleler = new List<(int x, int y)>();
             int x = tas.X;
             int y = tas.Y;
 
-            if (tas.renk == Renk.Beyaz && x > 0 && tahta[x - 1, y] == null)
-                hamleler.Add((x - 1, y));
-            else if (tas.renk == Renk.Siyah && x < 7 && tahta[x + 1, y] == null)
-                hamleler.Add((x + 1, y));
+            //  Koordinat sistemi ve yön kontrolü
+            if (tas.renk == Renk.Beyaz)
+            {
+                // Beyaz piyon yukarı gider (X ekseni azalır: 6→5→4→...)
+                int hedefX = x - 1;
+                return hedefX >= 0 && tahta[hedefX, y] == null;
+            }
+            else // Siyah piyon
+            {
+                // Siyah piyon aşağı gider (X ekseni artar: 1→2→3→...)
+                int hedefX = x + 1;
+                return hedefX <= 7 && tahta[hedefX, y] == null;
+            }
+        }
+
+        // Piyonun ileriye doğru gidebileceği hamleleri hesaplar.
+        public static List<(int x, int y)> Hesapla(Tas tas, Tas[,] tahta)
+        {
+            List<(int x, int y)> hamleler = new List<(int x, int y)>();
+            int x = tas.X;
+            int y = tas.Y;
+
+            //  Sadece 1 adım ileri hamle
+            if (tas.renk == Renk.Beyaz)
+            {
+                // Beyaz piyon yukarı gider (X ekseni azalır)
+                int hedefX = x - 1;
+                if (hedefX >= 0 && tahta[hedefX, y] == null)
+                {
+                    hamleler.Add((hedefX, y));
+                }
+            }
+            else // Siyah piyon
+            {
+                // Siyah piyon aşağı gider (X ekseni artar)
+                int hedefX = x + 1;
+                if (hedefX <= 7 && tahta[hedefX, y] == null)
+                {
+                    hamleler.Add((hedefX, y));
+                }
+            }
 
             return hamleler;
         }
-
     }
 }
