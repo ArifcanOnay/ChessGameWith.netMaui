@@ -283,7 +283,7 @@ namespace SatrancAPI.Services
             }
         }
 
-        // ✅ GELİŞTİRİLMİŞ: ROK DESTEKLİ HAMLE YAPMA
+        //  GELİŞTİRİLMİŞ: ROK DESTEKLİ HAMLE YAPMA
         public async Task<bool> HamleYap(Guid oyunId, Guid tasId, int hedefX, int hedefY)
         {
             var oyun = await _dbContext.Oyunlar.FindAsync(oyunId);
@@ -298,7 +298,7 @@ namespace SatrancAPI.Services
             if (tas == null)
                 return false;
 
-            // ✅ ROK HAMLESİ KONTROLÜ
+            //  ROK HAMLESİ KONTROLÜ
             if (tas.turu == TasTuru.Şah && Math.Abs(hedefY - tas.Y) == 2)
             {
                 Console.WriteLine("Rok hamlesi algılandı!");
@@ -390,22 +390,22 @@ namespace SatrancAPI.Services
             return true;
         }
 
-        // ✅ GELİŞTİRİLMİŞ ROK HAMLESİ YAPMA
+        //  GELİŞTİRİLMİŞ ROK HAMLESİ YAPMA
         private async Task<bool> RokHamlesiYap(Tas sah, int hedefX, int hedefY)
         {
             try
             {
-                // ✅ GELİŞTİRİLMİŞ ROK KONTROLÜ
+                //  GELİŞTİRİLMİŞ ROK KONTROLÜ
                 bool kisaRok = hedefY > sah.Y;
 
-                // ✅ YENİ: Şah tehdit altında mı kontrol et
+                //  YENİ: Şah tehdit altında mı kontrol et
                 if (SahTehditAltindaMi(sah.renk))
                 {
                     Console.WriteLine("Rok reddedildi: Şah tehdit altında");
                     return false;
                 }
 
-                // ✅ YENİ: Rok yolundaki kareler tehdit altında mı?
+                //  YENİ: Rok yolundaki kareler tehdit altında mı?
                 if (kisaRok)
                 {
                     if (KareTehditAltindaMi(sah.X, sah.Y + 1, sah.renk) ||
@@ -485,7 +485,7 @@ namespace SatrancAPI.Services
             }
         }
 
-        // ✅ YENİ: Kare tehdit kontrolü metodu
+        //  YENİ: Kare tehdit kontrolü metodu
         private bool KareTehditAltindaMi(int x, int y, Renk sahRengi)
         {
             try

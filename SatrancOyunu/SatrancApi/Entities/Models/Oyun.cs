@@ -1,6 +1,8 @@
-﻿namespace SatrancAPI.Entities.Models
+﻿using SatrancApi.Entities.Models;
+
+namespace SatrancAPI.Entities.Models
 {
-    public class Oyun
+    public class Oyun:BaseEntitiy
     {
         public Guid OyunId { get; set; }
         public Guid BeyazOyuncuId { get; set; }

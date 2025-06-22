@@ -10,21 +10,21 @@ namespace SatranOyunumApp.Views;
 
 public partial class GamePage : ContentPage
 {
-    private readonly ISatrancApiService _apiService; // 
+    private readonly ISatrancApiService _apiService; 
     private Button[,] _tahtaButonlari = new Button[8, 8];
-    // Mevcut field'larınızın altına ekleyin
+   
     private Button? _secilikTas = null;           // Seçili taş butonu
     private List<(int X, int Y)> _gecerliHamleler = new();  // API'den gelen geçerli hamleler
     private bool _beyazSirasi = true;             // Sıra kontrolü
     private Guid _aktifOyunId = Guid.Empty;       // Aktif oyun ID'si
     private bool _hamleBekleniyor = false;        // API çağrısı kilidi
     private List<Tas> _tahtaTaslari = new();
-    // ✅ YENİ: Koordinat sistemi field'ları
+   // Koordinat sistemi field'ları
     private Label[] _ustKoordinatlar = new Label[8];   // A-H
     private Label[] _solKoordinatlar = new Label[8];   // 1-8
     private bool _tahtaDonmus = false;                 // Tahta döndü mü?
 
-    // ✅ YENİ: Koordinat hesaplama
+    //  Koordinat hesaplama
     private string[] _sutunHarfleri = { "A", "B", "C", "D", "E", "F", "G", "H" };
     private string[] _satirNumaralari = { "8", "7", "6", "5", "4", "3", "2", "1" };// API'den gelen taş listesi
 
@@ -63,7 +63,7 @@ public partial class GamePage : ContentPage
 
        
         OyunGecmisiCollectionView.ItemsSource = _oyunGecmisi;
-        //  CheckBox event'ini bağla
+        //CheckBox event'ini bağla
         SesCheckBox.CheckedChanged += OnSesAyariDegisti;
 
     }
@@ -85,7 +85,7 @@ public partial class GamePage : ContentPage
         _oyunGecmisi.Insert(0, yeniOyun);
     }
 
-    // Sayfa her açıldığında çalışacak metod
+    //Sayfa her açıldığında çalışacak metod
     protected override void OnAppearing()
     {
         base.OnAppearing();
@@ -149,7 +149,7 @@ public partial class GamePage : ContentPage
         ChessBoard.Children.Clear();
         ChessBoard.ColumnDefinitions.Clear();
         ChessBoard.RowDefinitions.Clear();
-        // ✅ YENİ: Koordinat grid'lerini temizle
+        //  Koordinat grid'lerini temizle
         TopCoordinatesGrid.Children.Clear();
         LeftCoordinatesGrid.Children.Clear();
 
@@ -159,7 +159,7 @@ public partial class GamePage : ContentPage
             ChessBoard.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             ChessBoard.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
         }
-        // ✅ YENİ: Koordinat labelları oluştur
+        //  Koordinat labelları oluştur
         KoordinatlariOlustur();
 
         // Her kare için buton oluştur
@@ -172,13 +172,13 @@ public partial class GamePage : ContentPage
                     BackgroundColor = (satir + sutun) % 2 == 0 ? Colors.WhiteSmoke : Colors.SaddleBrown,
                     BorderWidth = 1,
                     BorderColor = Colors.Black,
-                    FontSize = 40,              // 32'den 40'a çıkarıldı
+                    FontSize = 40,              // 
                     FontAttributes = FontAttributes.Bold,  // Kalın yazı tipi
                     TextColor = Colors.Black,   // Siyah renk korundu
-                    FontFamily = "Segoe UI Symbol",  // Daha iyi sembol yazı tipi
-                    Padding = new Thickness(0),          // Padding'i sıfırla
-                    Margin = new Thickness(0),           // Margin'i sıfırla
-                    HorizontalOptions = LayoutOptions.Fill,   // Tam genişlik
+                    FontFamily = "Segoe UI Symbol",  
+                    Padding = new Thickness(0),        
+                    Margin = new Thickness(0),           
+                    HorizontalOptions = LayoutOptions.Fill,   
                     VerticalOptions = LayoutOptions.Fill,
 
                     Text = "",
@@ -251,7 +251,7 @@ public partial class GamePage : ContentPage
                         }
                         else
                         {
-                            // Kahverengi karelerde: Beyaz taş
+                            // Kahverengi karelerde Beyaz taş
                             _tahtaButonlari[satir, sutun].TextColor = Colors.White;
                         }
 
@@ -388,7 +388,7 @@ public partial class GamePage : ContentPage
 
                 if (!güvenliMi)
                 {
-                    // ✅ KIRMIZI RENK + UYARI
+                    //  KIRMIZI RENK + UYARI
                     buton.BackgroundColor = _gecersizHamleRengi; // Kırmızı renk
                     await SesCalat("invalid_selection"); // Hata sesi
 
@@ -468,7 +468,7 @@ public partial class GamePage : ContentPage
 
             if (sonuc.Basarili)
             {
-                // ✅ YENİ: ROK HAMLESİ KONTROLÜ VE SESİ
+                //  YENİ: ROK HAMLESİ KONTROLÜ VE SESİ
                 bool rokHamlesiMi = tas.turu == TasTuru.Şah && Math.Abs(hedefY - baslangicY) == 2;
 
                 if (rokHamlesiMi)
@@ -811,7 +811,7 @@ public partial class GamePage : ContentPage
     {
         try
         {
-            // Label'ı güncelle
+            // güncelle
             if (_kalanSure.TotalSeconds >= 0)
             {
                 string dakika = ((int)_kalanSure.TotalMinutes).ToString("00");
@@ -878,7 +878,7 @@ private async Task SahDurumuKontrolEt()
 
             if (durum.Basarili)
             {
-                // ✅ YENİ: API'DEN ŞAH-MAT KONTROLÜ
+                //  API'DEN ŞAH-MAT KONTROLÜ
                 if (durum.BeyazSahMat || durum.SiyahSahMat)
                 {
                     _oyunBasladi = false;
@@ -893,7 +893,7 @@ private async Task SahDurumuKontrolEt()
                     // Şah-mat sesi çal
                     await SesCalat("chess_checkmate");
 
-                    // ✅ GELİŞTİRİLMİŞ ŞAH-MAT MESAJI
+                    //  GELİŞTİRİLMİŞ ŞAH-MAT MESAJI
                     await DisplayAlert("🏆 OYUN BİTTİ - ŞAH MAT!",
                         $"🔥 {kaybeden} şah mat oldu!\n" +
                         $"👑 Kazanan: {kazanan}\n\n" +
@@ -904,7 +904,7 @@ private async Task SahDurumuKontrolEt()
                     return;
                 }
 
-                // ✅ MANUEL ŞAH KONTROLÜ (Şahlar tahtada var mı?)
+                //  MANUEL ŞAH KONTROLÜ (Şahlar tahtada var mı?)
                 var beyazSah = _tahtaTaslari.FirstOrDefault(t => t.TasSimgesi == "♔" && t.AktifMi);
                 var siyahSah = _tahtaTaslari.FirstOrDefault(t => t.TasSimgesi == "♚" && t.AktifMi);
 
@@ -932,7 +932,7 @@ private async Task SahDurumuKontrolEt()
                     return;
                 }
 
-                // ✅ ŞAH TEHDİT UYARISI
+                // ŞAH TEHDİT UYARISI
                 if (_oyunBasladi)
                 {
                     if (_beyazSirasi && durum.BeyazSahTehditAltinda)
@@ -1259,7 +1259,7 @@ private async Task SahDurumuKontrolEt()
         };
     }
 
-    // ✅ YENİ: Taş türü isimlerini görüntüle
+    //   Taş türü isimlerini görüntüle
     private string TasTuruDisplayAdi(TasTuru tur)
     {
         return tur switch
@@ -1300,14 +1300,14 @@ private async Task SahDurumuKontrolEt()
             var label = new Label
             {
                 Text = _tahtaDonmus ? _sutunHarfleri[7 - i] : _sutunHarfleri[i],
-                FontSize = 8,  // ✅ DÜZELTME: Font küçültüldü
+                FontSize = 8,  // 
                 FontAttributes = FontAttributes.Bold,
                 TextColor = Colors.White,
                 HorizontalOptions = LayoutOptions.Center,
                 VerticalOptions = LayoutOptions.Center,
                 BackgroundColor = Color.FromRgb(139, 69, 19), // SaddleBrown
-                Padding = new Thickness(0), // ✅ DÜZELTME: Padding kaldırıldı
-                Margin = new Thickness(0)   // ✅ DÜZELTME: Margin kaldırıldı
+                Padding = new Thickness(0), 
+                Margin = new Thickness(0)   
             };
 
             Grid.SetColumn(label, i);
@@ -1328,8 +1328,8 @@ private async Task SahDurumuKontrolEt()
                 VerticalOptions = LayoutOptions.Center,
                 BackgroundColor = Color.FromRgb(139, 69, 19), // SaddleBrown
                 Rotation = 0,
-                Padding = new Thickness(0), //  Padding kaldırıldı
-                Margin = new Thickness(0)   //  Margin kaldırıldı
+                Padding = new Thickness(0), //  
+                Margin = new Thickness(0)   //  
             };
 
             Grid.SetRow(label, i);

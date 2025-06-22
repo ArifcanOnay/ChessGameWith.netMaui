@@ -6,7 +6,7 @@ namespace SatranOyunumApp.Services
     {
         // Bağlantı Testi
         Task<bool> TestConnection();
-        // ✅ YENİ: Piyon terfi metodu
+        // Piyon terfi metodu
         Task<HamleSonucu> PiyonTerfiEt(Guid oyunId, Guid piyonId, TasTuru yeniTasTuru);
 
         // Oyuncu İşlemleri - Method signature'ları düzeltildi
@@ -31,7 +31,7 @@ namespace SatranOyunumApp.Services
         Task<OyunDurumSonucu> OyunDurumuGetir(Guid oyunId);
         Task<string> TestOyunDurumuEndpoint(Guid oyunId);
 
-        // ✅ Eksik methodlar eklendi
+       
         Task<List<Hamle>> HamleGecmisiniGetir(Guid oyunId);
         Task<OyuncuOlusturSonucu> YeniOyuncuOlustur(string isim, string email, int renk);
     }

@@ -9,10 +9,10 @@ namespace SatrancAPI.Entities.HamleSınıfları
         {
             var hamleler = new List<(int x, int y)>();
 
-            // ✅ Normal şah hamleleri (1 kare her yöne)
+            //  Normal şah hamleleri (1 kare her yöne)
             hamleler.AddRange(TumYonler.Hesapla(tas, tahta));
 
-            // ✅ ROK HAMLELERİ EKLE
+            //  ROK HAMLELER
             hamleler.AddRange(Rok.Hesapla(tas, tahta));
 
             return hamleler;

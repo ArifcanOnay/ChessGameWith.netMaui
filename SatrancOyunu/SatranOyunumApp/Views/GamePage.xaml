@@ -11,7 +11,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
-                <!-- ✅ YENİ: Oyun Geçmişi için satır eklendi -->
+                <!--  YENİ: Oyun Geçmişi için satır eklendi -->
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
@@ -101,7 +101,7 @@
                         </Picker>
                     </StackLayout>
 
-                    <!-- ✅ YENİ: Tahta Döndürme Butonu -->
+                    <!--  YENİ: Tahta Döndürme Butonu -->
                     <StackLayout Orientation="Horizontal">
                         <Button x:Name="TestOyunBtn" 
                                 Text="🎮 Oyunu Başlat" 
@@ -145,12 +145,12 @@
                 </StackLayout>
             </Frame>
 
-            <!-- ✅ YENİ: Oyun Geçmişi Panel - CollectionView -->
+            <!--   Oyun Geçmişi Panel - CollectionView -->
             <Frame Grid.Row="3" BackgroundColor="LightSteelBlue" Padding="10" Margin="5">
                 <StackLayout>
                     <Label Text="📋 Oyun Geçmişi" FontSize="16" FontAttributes="Bold" HorizontalOptions="Center"/>
 
-                    <!-- ✅ CollectionView - Oyun geçmişi için -->
+                    <!--  CollectionView - Oyun geçmişi için -->
                     <CollectionView x:Name="OyunGecmisiCollectionView" 
                                     HeightRequest="120"
                                     BackgroundColor="White">
@@ -204,7 +204,7 @@
                 </StackLayout>
             </Frame>
 
-            <!-- ✅ YENİ: KOORDİNAT SİSTEMLİ SATRANÇ TAHTASI -->
+            <!--   KOORDİNAT SİSTEMLİ SATRANÇ TAHTASI -->
             <Frame Grid.Row="4" BackgroundColor="SaddleBrown" Padding="2" Margin="5">
                 <Grid Margin="0" Padding="0">
                     <Grid.RowDefinitions>
@@ -221,7 +221,7 @@
                         <ColumnDefinition Width="500" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- ✅ ÜST KOORDİNATLAR - Tam üstte -->
+                    <!--  ÜST KOORDİNATLAR - Tam üstte -->
                     <Grid x:Name="TopCoordinatesGrid" 
                           Grid.Row="0" 
                           Grid.Column="1"
@@ -241,7 +241,7 @@
                         </Grid.ColumnDefinitions>
                     </Grid>
 
-                    <!-- ✅ SOL KOORDİNATLAR - Tam solda -->
+                    <!--  SOL KOORDİNATLAR - Tam solda -->
                     <Grid x:Name="LeftCoordinatesGrid" 
                           Grid.Row="1" 
                           Grid.Column="0"
@@ -261,7 +261,7 @@
                         </Grid.RowDefinitions>
                     </Grid>
 
-                    <!-- ✅ ANA SATRANÇ TAHTASI - Büyük -->
+                    <!--  ANA SATRANÇ TAHTASI - Büyük -->
                     <Grid x:Name="ChessBoard" 
                           Grid.Row="1" 
                           Grid.Column="1"

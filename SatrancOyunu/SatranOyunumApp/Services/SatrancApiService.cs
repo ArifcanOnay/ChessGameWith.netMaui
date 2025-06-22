@@ -31,7 +31,7 @@ namespace SatranOyunumApp.Services
             }
         }
 
-        // ========== MEVCUT KULLANICI YÖNETİMİ METHODLARI ==========
+        //  MEVCUT KULLANICI YÖNETİMİ METHODLARI
         public async Task<KullaniciKayitSonucu> KullaniciKaydet(string kullaniciAdi, string email, string sifre)
         {
             try
@@ -124,7 +124,7 @@ namespace SatranOyunumApp.Services
                     var responseContent = await response.Content.ReadAsStringAsync();
                     var loginResponse = JsonSerializer.Deserialize<JsonElement>(responseContent);
 
-                    // *** GÜVENLİ PROPERTY KONTROLÜ ***
+                    //  GÜVENLİ PROPERTY KONTROLÜ 
                     string kullaniciAdi = email.Split('@')[0]; // Default olarak email'den al
 
                     // API'den KullaniciAdi varsa onu kullan
@@ -175,7 +175,7 @@ namespace SatranOyunumApp.Services
             }
         }
 
-        // ========== YENİ SATRANÇ OYUNU METHODLARI ==========
+        // 
 
         // 1. Tüm oyunları getir
         public async Task<List<Oyun>> TumOyunlariGetir()
@@ -404,7 +404,7 @@ namespace SatranOyunumApp.Services
             }
         }
 
-        // ========== YENİ EKLENDİ: Oyuncu oluştur (Renk enum ile) ==========
+        //  Oyuncu oluştur (Renk enum ile)
         public async Task<OyuncuOlusturSonucu> OyuncuOlustur(string isim, string email, Renk renk)
         {
             try
@@ -434,7 +434,7 @@ namespace SatranOyunumApp.Services
                 return new OyuncuOlusturSonucu { Basarili = false, Mesaj = ex.Message };
             }
         }
-        // SatrancApiService.cs'e ekle (diğer metotların altına):
+        
 
         public async Task<OyunDurumSonucu> OyunDurumuGetir(Guid oyunId)
         {
@@ -531,7 +531,7 @@ namespace SatranOyunumApp.Services
         }
     }
 
-    // ========== MEVCUT SONUÇ SINIFLARI ==========
+    // MEVCUT SONUÇ SINIFLARI 
     public class LoginSonucu
     {
         public bool Basarili { get; set; }
@@ -545,7 +545,7 @@ namespace SatranOyunumApp.Services
         public string? Mesaj { get; set; }
     }
 
-    // ========== YENİ SATRANÇ SONUÇ SINIFLARI ==========
+    //  YENİ SATRANÇ SONUÇ SINIFLARI
     public class OyunOlusturSonucu
     {
         public bool Basarili { get; set; }
@@ -575,7 +575,7 @@ namespace SatranOyunumApp.Services
         public bool BeyazSahMat { get; set; }
         public bool SiyahSahMat { get; set; }
         public bool OyunBittiMi { get; set; }
-        // : Şah-mat bilgileri
+        //  Şah-mat bilgileri
         public string? Kazanan { get; set; }
         public string? BitisNedeni { get; set; }
 

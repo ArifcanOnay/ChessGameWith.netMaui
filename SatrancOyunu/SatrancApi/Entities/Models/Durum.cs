@@ -4,6 +4,8 @@
     {
         Bitiyor,
         Oynaniyor,
-        Berabere
+        Berabere,
+        Aktif,
+        Beklemede
     }
 }
