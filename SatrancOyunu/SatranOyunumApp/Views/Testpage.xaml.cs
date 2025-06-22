@@ -6,7 +6,6 @@ public partial class TestPage : ContentPage
 {
     private readonly ISatrancApiService _apiService;
 
-    // ? Constructor Injection
     public TestPage(ISatrancApiService apiService)
     {
         InitializeComponent();

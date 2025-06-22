@@ -6,10 +6,12 @@ namespace SatranOyunumApp.Services
     {
         // Bağlantı Testi
         Task<bool> TestConnection();
+        // Piyon terfi metodu
+        Task<HamleSonucu> PiyonTerfiEt(Guid oyunId, Guid piyonId, TasTuru yeniTasTuru);
 
-        // Oyuncu İşlemleri - ✅ Method signature'ları düzeltildi
+        // Oyuncu İşlemleri - Method signature'ları düzeltildi
         Task<OyuncuOlusturSonucu> OyuncuOlustur(string isim, string email, Renk renk);
-        Task<KullaniciKayitSonucu> KullaniciKaydet(string isim, string email, string sifre); // ✅ Dönüş tipi düzeltildi
+        Task<KullaniciKayitSonucu> KullaniciKaydet(string isim, string email, string sifre); // Dönüş tipi düzeltildi
         Task<LoginSonucu> Login(string email, string sifre);
         Task<List<Oyuncu>> TumOyunculariGetir();
       
@@ -29,7 +31,7 @@ namespace SatranOyunumApp.Services
         Task<OyunDurumSonucu> OyunDurumuGetir(Guid oyunId);
         Task<string> TestOyunDurumuEndpoint(Guid oyunId);
 
-        // ✅ Eksik methodlar eklendi
+       
         Task<List<Hamle>> HamleGecmisiniGetir(Guid oyunId);
         Task<OyuncuOlusturSonucu> YeniOyuncuOlustur(string isim, string email, int renk);
     }

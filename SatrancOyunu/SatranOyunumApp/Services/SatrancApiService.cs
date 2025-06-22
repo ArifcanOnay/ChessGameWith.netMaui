@@ -31,7 +31,7 @@ namespace SatranOyunumApp.Services
             }
         }
 
-        // ========== MEVCUT KULLANICI YÖNETİMİ METHODLARI ==========
+        //  MEVCUT KULLANICI YÖNETİMİ METHODLARI
         public async Task<KullaniciKayitSonucu> KullaniciKaydet(string kullaniciAdi, string email, string sifre)
         {
             try
@@ -124,7 +124,7 @@ namespace SatranOyunumApp.Services
                     var responseContent = await response.Content.ReadAsStringAsync();
                     var loginResponse = JsonSerializer.Deserialize<JsonElement>(responseContent);
 
-                    // *** GÜVENLİ PROPERTY KONTROLÜ ***
+                    //  GÜVENLİ PROPERTY KONTROLÜ 
                     string kullaniciAdi = email.Split('@')[0]; // Default olarak email'den al
 
                     // API'den KullaniciAdi varsa onu kullan
@@ -175,7 +175,7 @@ namespace SatranOyunumApp.Services
             }
         }
 
-        // ========== YENİ SATRANÇ OYUNU METHODLARI ==========
+        // 
 
         // 1. Tüm oyunları getir
         public async Task<List<Oyun>> TumOyunlariGetir()
@@ -404,7 +404,7 @@ namespace SatranOyunumApp.Services
             }
         }
 
-        // ========== YENİ EKLENDİ: Oyuncu oluştur (Renk enum ile) ==========
+        //  Oyuncu oluştur (Renk enum ile)
         public async Task<OyuncuOlusturSonucu> OyuncuOlustur(string isim, string email, Renk renk)
         {
             try
@@ -434,7 +434,7 @@ namespace SatranOyunumApp.Services
                 return new OyuncuOlusturSonucu { Basarili = false, Mesaj = ex.Message };
             }
         }
-        // SatrancApiService.cs'e ekle (diğer metotların altına):
+        
 
         public async Task<OyunDurumSonucu> OyunDurumuGetir(Guid oyunId)
         {
@@ -446,7 +446,7 @@ namespace SatranOyunumApp.Services
                 {
                     var jsonString = await response.Content.ReadAsStringAsync();
 
-                    // ✅ Manuel JSON parse (daha güvenli)
+                    //  Manuel JSON parse 
                     var jsonDoc = JsonDocument.Parse(jsonString);
                     var root = jsonDoc.RootElement;
 
@@ -487,6 +487,38 @@ namespace SatranOyunumApp.Services
                 return $"Hata: {ex.Message}";
             }
         }
+        // Piyon terfi etme
+        public async Task<HamleSonucu> PiyonTerfiEt(Guid oyunId, Guid piyonId, TasTuru yeniTasTuru)
+        {
+            try
+            {
+                var request = new
+                {
+                    PiyonId = piyonId,
+                    YeniTasTuru = yeniTasTuru
+                };
+
+                var json = JsonSerializer.Serialize(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync($"/api/oyunlar/{oyunId}/piyon-terfi", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return new HamleSonucu { Basarili = true, Mesaj = "Piyon başarıyla terfi etti!" };
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return new HamleSonucu { Basarili = false, Mesaj = errorContent };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new HamleSonucu { Basarili = false, Mesaj = $"Terfi hatası: {ex.Message}" };
+            }
+        }
+
 
 
 
@@ -499,7 +531,7 @@ namespace SatranOyunumApp.Services
         }
     }
 
-    // ========== MEVCUT SONUÇ SINIFLARI ==========
+    // MEVCUT SONUÇ SINIFLARI 
     public class LoginSonucu
     {
         public bool Basarili { get; set; }
@@ -513,7 +545,7 @@ namespace SatranOyunumApp.Services
         public string? Mesaj { get; set; }
     }
 
-    // ========== YENİ SATRANÇ SONUÇ SINIFLARI ==========
+    //  YENİ SATRANÇ SONUÇ SINIFLARI
     public class OyunOlusturSonucu
     {
         public bool Basarili { get; set; }
@@ -537,17 +569,25 @@ namespace SatranOyunumApp.Services
     {
         public bool Basarili { get; set; } = true;
         public string? Mesaj { get; set; }
-
-        // ✅ JSON attribute'ları kaldır, manuel parse kullan
         public int SiradakiOyuncuRengiId { get; set; }
         public bool BeyazSahTehditAltinda { get; set; }
         public bool SiyahSahTehditAltinda { get; set; }
         public bool BeyazSahMat { get; set; }
         public bool SiyahSahMat { get; set; }
         public bool OyunBittiMi { get; set; }
+        //  Şah-mat bilgileri
+        public string? Kazanan { get; set; }
+        public string? BitisNedeni { get; set; }
 
         // Helper property
         public string SiradakiOyuncuRengi => SiradakiOyuncuRengiId == 1 ? "Beyaz" : "Siyah";
+    }
+    public class OyunGecmisiItem
+    {
+        public int OyunNo { get; set; }
+        public DateTime OyunTarihi { get; set; }
+        public string Kazanan { get; set; } = "";
+        public string DurumIkonu { get; set; } = "";
     }
 
 }

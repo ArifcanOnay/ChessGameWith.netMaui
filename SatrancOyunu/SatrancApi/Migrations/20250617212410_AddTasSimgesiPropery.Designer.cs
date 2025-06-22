@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SatrancAPI.Datas;
 
@@ -11,9 +12,11 @@ using SatrancAPI.Datas;
 namespace SatrancApi.Migrations
 {
     [DbContext(typeof(SatrancDbContext))]
-    partial class SatrancDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250617212410_AddTasSimgesiPropery")]
+    partial class AddTasSimgesiPropery
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,18 +37,6 @@ namespace SatrancApi.Migrations
                     b.Property<int>("BaslangicY")
                         .HasColumnType("int");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DeletedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("DeletedDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<bool>("EnPassantMi")
                         .HasColumnType("bit");
 
@@ -57,9 +48,6 @@ namespace SatrancApi.Migrations
 
                     b.Property<int>("HedefY")
                         .HasColumnType("int");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Notasyon")
                         .HasColumnType("nvarchar(max)");
@@ -84,12 +72,6 @@ namespace SatrancApi.Migrations
 
                     b.Property<int?>("TerfiEdildigiTas")
                         .HasColumnType("int");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<Guid?>("YenilenTasId")
                         .HasColumnType("uniqueidentifier");
@@ -133,23 +115,8 @@ namespace SatrancApi.Migrations
                     b.Property<DateTime?>("BitisTarihi")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DeletedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("DeletedDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<int?>("Durum")
                         .HasColumnType("int");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
 
                     b.Property<string>("KazananOyuncu")
                         .HasColumnType("nvarchar(max)");
@@ -172,12 +139,6 @@ namespace SatrancApi.Migrations
                     b.Property<int>("ToplamHamleSayisi")
                         .HasColumnType("int");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("OyunId");
 
                     b.HasIndex("BeyazOyuncuId");
@@ -193,29 +154,8 @@ namespace SatrancApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DeletedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("DeletedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Sifre")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("email")
                         .HasColumnType("nvarchar(max)");
@@ -240,25 +180,10 @@ namespace SatrancApi.Migrations
                     b.Property<bool>("AktifMi")
                         .HasColumnType("bit");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DeletedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("DeletedDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<int?>("EnPassantTuru")
                         .HasColumnType("int");
 
                     b.Property<bool>("HicHareketEtmediMi")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<Guid>("OyunId")
@@ -273,12 +198,6 @@ namespace SatrancApi.Migrations
                     b.Property<string>("TasSimgesi")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("X")
                         .HasColumnType("int");

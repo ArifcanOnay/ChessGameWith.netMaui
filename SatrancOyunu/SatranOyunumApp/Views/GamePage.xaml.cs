@@ -1,29 +1,32 @@
 ﻿using SatranOyunumApp.Services;
 using SatranOyunumApp.Models;
-using System.Collections.ObjectModel; // ✅ YENİ: ObservableCollection için
+using System.Collections.ObjectModel; 
+#nullable disable 
 
 namespace SatranOyunumApp.Views;
 
-// ✅ YENİ: Oyun geçmişi için basit model sınıfı
-public class OyunGecmisiItem
-{
-    public int OyunNo { get; set; }
-    public DateTime OyunTarihi { get; set; }
-    public string Kazanan { get; set; } = "";
-    public string DurumIkonu { get; set; } = "";
-}
+
+
 
 public partial class GamePage : ContentPage
 {
-    private readonly ISatrancApiService _apiService; // 
+    private readonly ISatrancApiService _apiService; 
     private Button[,] _tahtaButonlari = new Button[8, 8];
-    // Mevcut field'larınızın altına ekleyin
+   
     private Button? _secilikTas = null;           // Seçili taş butonu
     private List<(int X, int Y)> _gecerliHamleler = new();  // API'den gelen geçerli hamleler
     private bool _beyazSirasi = true;             // Sıra kontrolü
     private Guid _aktifOyunId = Guid.Empty;       // Aktif oyun ID'si
     private bool _hamleBekleniyor = false;        // API çağrısı kilidi
-    private List<Tas> _tahtaTaslari = new();      // API'den gelen taş listesi
+    private List<Tas> _tahtaTaslari = new();
+   // Koordinat sistemi field'ları
+    private Label[] _ustKoordinatlar = new Label[8];   // A-H
+    private Label[] _solKoordinatlar = new Label[8];   // 1-8
+    private bool _tahtaDonmus = false;                 // Tahta döndü mü?
+
+    //  Koordinat hesaplama
+    private string[] _sutunHarfleri = { "A", "B", "C", "D", "E", "F", "G", "H" };
+    private string[] _satirNumaralari = { "8", "7", "6", "5", "4", "3", "2", "1" };// API'den gelen taş listesi
 
     // Renk sabitleri
     private readonly Color _normalBeyazKare = Colors.WhiteSmoke;
@@ -40,49 +43,34 @@ public partial class GamePage : ContentPage
 
     // Mevcut field'lardan sonra ekle:
 
-    // ✅ YENİ: Timer için field'lar
+    // Timer için field'lar
     private Timer? _hamleTimer;                    // Hamle zamanlayıcısı
     private TimeSpan _kalanSure = TimeSpan.FromMinutes(5); // 5 dakika
     private bool _timerCalisiyorMu = false;        // Timer durumu
 
-    // ✅ YENİ: CollectionView için ObservableCollection
+    //  CollectionView için ObservableCollection
     private ObservableCollection<OyunGecmisiItem> _oyunGecmisi = new();
+    private bool _sesAktif = true; // CheckBox durumu
 
     public GamePage(ISatrancApiService apiService)
     {
         InitializeComponent();
-        _apiService = apiService; // ✅ Inject edilen service'i kullan
+        _apiService = apiService; // Inject edilen service'i kullanmak için
 
         InitializeDefaults();
         SatrancTahtasiniOlustur();
         KullaniciBilgileriniYukle();
 
-        // ✅ YENİ: CollectionView'i bağla ve örnek veriler yükle
+       
         OyunGecmisiCollectionView.ItemsSource = _oyunGecmisi;
-        OrnekOyunGecmisiniYukle();
+        //CheckBox event'ini bağla
+        SesCheckBox.CheckedChanged += OnSesAyariDegisti;
+
     }
 
-    // ✅ YENİ: Örnek oyun geçmişi verilerini yükle
-    private void OrnekOyunGecmisiniYukle()
-    {
-        _oyunGecmisi.Add(new OyunGecmisiItem
-        {
-            OyunNo = 1,
-            OyunTarihi = DateTime.Now.AddDays(-2),
-            Kazanan = "Beyaz",
-            DurumIkonu = "♔"
-        });
+    
 
-        _oyunGecmisi.Add(new OyunGecmisiItem
-        {
-            OyunNo = 2,
-            OyunTarihi = DateTime.Now.AddDays(-1),
-            Kazanan = "Siyah",
-            DurumIkonu = "♚"
-        });
-    }
-
-    // ✅ YENİ: Oyun bittiğinde geçmişe ekle
+    //  Oyun bittiğinde geçmişe ekle
     private void OyunGecmisineEkle(string kazanan)
     {
         var yeniOyun = new OyunGecmisiItem
@@ -97,7 +85,7 @@ public partial class GamePage : ContentPage
         _oyunGecmisi.Insert(0, yeniOyun);
     }
 
-    // Sayfa her açıldığında çalışacak metod
+    //Sayfa her açıldığında çalışacak metod
     protected override void OnAppearing()
     {
         base.OnAppearing();
@@ -106,33 +94,41 @@ public partial class GamePage : ContentPage
     }
 
     // Kullanıcı bilgilerini yeniden yükleme
-    private void KullaniciBilgileriniYukle()
+    private async void KullaniciBilgileriniYukle()
     {
-        try
-        {
-            // Preferences'dan kullanıcı bilgilerini al
-            _kullaniciAdi = Preferences.Get("KullaniciAdi", "Misafir");
-            _kullaniciEmail = Preferences.Get("KullaniciEmail", "");
+          try
+    {
+        // Preferences'dan kullanıcı bilgilerini al
+        _kullaniciAdi = Preferences.Get("KullaniciAdi", "Misafir");
+        _kullaniciEmail = Preferences.Get("KullaniciEmail", "");
 
-            // Eğer kullanıcı çıkış yapmışsa varsayılan değerleri göster
-            if (string.IsNullOrEmpty(_kullaniciEmail) || _kullaniciAdi == "Misafir")
-            {
-                KullaniciLabel.Text = "Kullanıcı: Misafir";
-                EmailLabel.Text = "📧 Giriş yapılmadı";
-            }
-            else
-            {
-                // UI'yi güncelle
-                KullaniciLabel.Text = $"Kullanıcı: {_kullaniciAdi}";
-                EmailLabel.Text = $"📧 {_kullaniciEmail}";
-            }
-        }
-        catch
+        //  Eğer oturum yoksa login'e yönlendir
+        if (string.IsNullOrEmpty(_kullaniciEmail) || _kullaniciAdi == "Misafir")
         {
-            // Hata durumunda varsayılan değerler
             KullaniciLabel.Text = "Kullanıcı: Misafir";
             EmailLabel.Text = "📧 Giriş yapılmadı";
+            
+            //Oturum yoksa login sayfasına yönlendir
+            await DisplayAlert("Giriş Gerekli", 
+                "Oyun oynamak için giriş yapmanız gerekiyor.", 
+                "Tamam");
+            await Shell.Current.GoToAsync("//LoginPage");
         }
+        else
+        {
+            // UI'yi güncelle
+            KullaniciLabel.Text = $"Kullanıcı: {_kullaniciAdi}";
+            EmailLabel.Text = $"📧 {_kullaniciEmail}";
+        }
+    }
+    catch
+    {
+        // Hata durumunda login'e yönlendir
+        KullaniciLabel.Text = "Kullanıcı: Misafir";
+        EmailLabel.Text = "📧 Giriş yapılmadı";
+        await Shell.Current.GoToAsync("//LoginPage");
+    }
+      
     }
 
     private void InitializeDefaults()
@@ -153,6 +149,9 @@ public partial class GamePage : ContentPage
         ChessBoard.Children.Clear();
         ChessBoard.ColumnDefinitions.Clear();
         ChessBoard.RowDefinitions.Clear();
+        //  Koordinat grid'lerini temizle
+        TopCoordinatesGrid.Children.Clear();
+        LeftCoordinatesGrid.Children.Clear();
 
         // 8x8 grid oluştur
         for (int i = 0; i < 8; i++)
@@ -160,6 +159,8 @@ public partial class GamePage : ContentPage
             ChessBoard.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             ChessBoard.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
         }
+        //  Koordinat labelları oluştur
+        KoordinatlariOlustur();
 
         // Her kare için buton oluştur
         for (int satir = 0; satir < 8; satir++)
@@ -171,13 +172,13 @@ public partial class GamePage : ContentPage
                     BackgroundColor = (satir + sutun) % 2 == 0 ? Colors.WhiteSmoke : Colors.SaddleBrown,
                     BorderWidth = 1,
                     BorderColor = Colors.Black,
-                    FontSize = 40,              // 32'den 40'a çıkarıldı
+                    FontSize = 40,              // 
                     FontAttributes = FontAttributes.Bold,  // Kalın yazı tipi
                     TextColor = Colors.Black,   // Siyah renk korundu
-                    FontFamily = "Segoe UI Symbol",  // Daha iyi sembol yazı tipi
-                    Padding = new Thickness(0),          // Padding'i sıfırla
-                    Margin = new Thickness(0),           // Margin'i sıfırla
-                    HorizontalOptions = LayoutOptions.Fill,   // Tam genişlik
+                    FontFamily = "Segoe UI Symbol",  
+                    Padding = new Thickness(0),        
+                    Margin = new Thickness(0),           
+                    HorizontalOptions = LayoutOptions.Fill,   
                     VerticalOptions = LayoutOptions.Fill,
 
                     Text = "",
@@ -250,7 +251,7 @@ public partial class GamePage : ContentPage
                         }
                         else
                         {
-                            // Kahverengi karelerde: Beyaz taş
+                            // Kahverengi karelerde Beyaz taş
                             _tahtaButonlari[satir, sutun].TextColor = Colors.White;
                         }
 
@@ -272,6 +273,13 @@ public partial class GamePage : ContentPage
     {
         if (sender is Button buton && buton.CommandParameter != null)
         {
+            if (!_oyunBasladi)
+            {
+                await DisplayAlert("Oyun Bitti",
+                    "Oyun sona erdi! Yeni oyun başlatmak için 'Oyunu Başlat' butonuna tıklayın.",
+                    "Tamam");
+                return; // Hamle yapılmasını engelle
+            }
             if (_hamleBekleniyor) return; // API çağrısı devam ediyorsa bekle
 
             var koordinatlar = buton.CommandParameter.ToString().Split(',');
@@ -295,9 +303,12 @@ public partial class GamePage : ContentPage
     {
         if (!TasSecilebilirMi(x, y))
         {
+            
+            await SesCalat("invalid_selection");
             await DisplayAlert("Uyarı", "Bu taşı seçemezsiniz!", "Tamam");
             return;
         }
+        await SesCalat("chess_move");
 
         // Taşı seç
         _secilikTas = buton;
@@ -360,14 +371,39 @@ public partial class GamePage : ContentPage
 
         // Hamle yapılabilir mi kontrol et
         bool gecerliHamle = _gecerliHamleler.Any(h => h.X == x && h.Y == y);
-        await DisplayAlert("Debug",
-    $"Hedef: ({x},{y})\n" +
-    $"Geçerli hamleler: {string.Join(", ", _gecerliHamleler.Select(h => $"({h.X},{h.Y})"))}\n" +
-    $"Geçerli mi: {gecerliHamle}",
-    "Tamam");
+    //    await DisplayAlert("Debug",
+    //$"Hedef: ({x},{y})\n" +
+    //$"Geçerli hamleler: {string.Join(", ", _gecerliHamleler.Select(h => $"({h.X},{h.Y})"))}\n" +
+    //$"Geçerli mi: {gecerliHamle}",
+    //"Tamam");
 
         if (gecerliHamle)
         {
+            var secilenTas = _tahtaTaslari.FirstOrDefault(t => t.X == seciliX && t.Y == seciliY && t.AktifMi);
+
+            // Eğer şah hareket ediyorsa, güvenlik kontrolü yap
+            if (secilenTas != null && secilenTas.TasSimgesi == "♔" || secilenTas.TasSimgesi == "♚")
+            {
+                bool güvenliMi = await SahHamleGuvenligi(seciliX, seciliY, x, y, secilenTas.renk);
+
+                if (!güvenliMi)
+                {
+                    //  KIRMIZI RENK + UYARI
+                    buton.BackgroundColor = _gecersizHamleRengi; // Kırmızı renk
+                    await SesCalat("invalid_selection"); // Hata sesi
+
+                    await Task.Delay(800); // 0.8 saniye bekle
+                    TahtaRenkleriniSifirla();
+
+                    await DisplayAlert("⚠️ GEÇERSİZ HAMLE",
+                        "Şahınızı tehlikeye atabilecek bu hamleyi yapamazsınız!\n\n" +
+                        "Bu kare düşman taşları tarafından kontrol edilmektedir.",
+                        "Anladım");
+
+                    SeciliTasiTemizle();
+                    return;
+                }
+            }
             await HamleYap(seciliX, seciliY, x, y);
         }
         else
@@ -385,6 +421,9 @@ public partial class GamePage : ContentPage
     private async Task HamleYap(int baslangicX, int baslangicY, int hedefX, int hedefY)
     {
         _hamleBekleniyor = true;
+        string baslangicKare = KareAdiniGetir(baslangicX, baslangicY);
+        string hedefKare = KareAdiniGetir(hedefX, hedefY);
+        string hamleNotasyonu = $"{baslangicKare} → {hedefKare}";
 
         try
         {
@@ -395,8 +434,16 @@ public partial class GamePage : ContentPage
                 await DisplayAlert("Hata", "Taş bulunamadı!", "Tamam");
                 return;
             }
+            //  PİYON TERFİ KONTROLÜ
+            bool piyonTerfiGereklimi = false;
+            if (tas.turu == TasTuru.Piyon)
+            {
+                // Beyaz piyon 0. sıraya, siyah piyon 7. sıraya ulaşırsa terfi
+                piyonTerfiGereklimi = (tas.renk == Renk.Beyaz && hedefX == 0) ||
+                                     (tas.renk == Renk.Siyah && hedefX == 7);
+            }
 
-            // ✅ YENİ: Hedef konumda düşman şahı var mı kontrol et
+            // Hedef konumda düşman şahı var mı kontrol et
             var hedefTas = _tahtaTaslari.FirstOrDefault(t => t.X == hedefX && t.Y == hedefY && t.AktifMi);
             bool sahYenildi = false;
             string yenilenSah = "";
@@ -421,17 +468,51 @@ public partial class GamePage : ContentPage
 
             if (sonuc.Basarili)
             {
+                //  YENİ: ROK HAMLESİ KONTROLÜ VE SESİ
+                bool rokHamlesiMi = tas.turu == TasTuru.Şah && Math.Abs(hedefY - baslangicY) == 2;
+
+                if (rokHamlesiMi)
+                {
+                    string rokTuru = hedefY > baslangicY ? "Kısa Rok" : "Uzun Rok";
+                    await SesCalat("chess_castling");
+                    await DisplayAlert("🏰 ROK BAŞARILI",
+                        $"{rokTuru} başarıyla tamamlandı!",
+                        "Harika!");
+                }
+
+
+
+
+
+                //  PİYON TERFİ İŞLEMİ
+                if (piyonTerfiGereklimi)
+                {
+                    var terfiTuru = await PiyonTerfiSecimi();
+                    if (terfiTuru != null)
+                    {
+                        var terfiSonucu = await _apiService.PiyonTerfiEt(_aktifOyunId, tas.TasId, terfiTuru.Value);
+                        if (terfiSonucu.Basarili)
+                        {
+                            await SesCalat("chess_capture"); // Terfi sesi
+                            await DisplayAlert("🎉 PİYON TERFİ",
+                                $"Piyon başarıyla {TasTuruDisplayAdi(terfiTuru.Value)}'e terfi etti!",
+                                "Harika!");
+                        }
+                    }
+                }
                 // Başarılı hamle - tahtayı güncelle
                 await TahtaTaslariniYukle();
 
-                // ✅ ŞAH YENİLDİ Mİ KONTROL ET
+                // ŞAH YENİLDİ Mİ KONTROL ET
                 if (sahYenildi)
                 {
+                    _oyunBasladi = false;
                     TimerDurdur();
                     string kazanan = yenilenSah == "Beyaz" ? "Siyah" : "Beyaz";
 
-                    // ✅ YENİ: Oyun geçmişine ekle
+                    // YENİ: Oyun geçmişine ekle
                     OyunGecmisineEkle(kazanan);
+                    await SesCalat("chess_checkmate");
 
                     await DisplayAlert("🏆 OYUN BİTTİ",
                         $"Şah mat oldu! Kazanan: {kazanan}",
@@ -534,6 +615,8 @@ public partial class GamePage : ContentPage
 
             if (cikisOnay)
             {
+                _oyunBasladi = false;
+                _aktifOyunId = Guid.Empty;
                 TimerDurdur();
                 // Kullanıcı bilgilerini temizle
                 Preferences.Remove("KullaniciAdi");
@@ -669,13 +752,13 @@ public partial class GamePage : ContentPage
             SiraLabel.Text = "🎯 Sıra: Siyah";
             SiraLabel.TextColor = Colors.DarkRed;
         }
-        // ✅ YENİ: Sıra değiştiğinde şah durumunu kontrol et
+        //  Sıra değiştiğinde şah durumunu kontrol et
         if (_oyunBasladi)
         {
             await SahDurumuKontrolEt();
         }
     }
-    // ✅ YENİ: Timer metotları
+    //  Timer metotları
     private void TimerBaslat()
     {
         // Eski timer'ı durdur
@@ -728,7 +811,7 @@ public partial class GamePage : ContentPage
     {
         try
         {
-            // Label'ı güncelle
+            // güncelle
             if (_kalanSure.TotalSeconds >= 0)
             {
                 string dakika = ((int)_kalanSure.TotalMinutes).ToString("00");
@@ -770,7 +853,7 @@ public partial class GamePage : ContentPage
         TimerBaslat();
     }
 
-    // ✅ YENİ: Renk picker'ı güncelle
+    //  Renk picker'ı güncelle
     private void RenkPickerGuncelle()
     {
         if (_beyazSirasi)
@@ -784,9 +867,10 @@ public partial class GamePage : ContentPage
             RenkLabel.TextColor = Colors.DarkRed;
         }
     }
-    private async Task SahDurumuKontrolEt()
+  
+private async Task SahDurumuKontrolEt()
     {
-        if (_aktifOyunId == Guid.Empty) return;
+        if (_aktifOyunId == Guid.Empty || !_oyunBasladi) return;
 
         try
         {
@@ -794,48 +878,79 @@ public partial class GamePage : ContentPage
 
             if (durum.Basarili)
             {
-                // ✅ 1. API'DEN ŞAH MAT KONTROLÜ
+                //  API'DEN ŞAH-MAT KONTROLÜ
                 if (durum.BeyazSahMat || durum.SiyahSahMat)
                 {
+                    _oyunBasladi = false;
                     TimerDurdur();
+
                     string kazanan = durum.BeyazSahMat ? "Siyah" : "Beyaz";
-                    await DisplayAlert("🏆 OYUN BİTTİ",
-                        $"Şah mat oldu! Kazanan: {kazanan}",
-                        "Tamam");
+                    string kaybeden = durum.BeyazSahMat ? "Beyaz" : "Siyah";
+
+                    // Oyun geçmişine ekle
+                    OyunGecmisineEkle(kazanan);
+
+                    // Şah-mat sesi çal
+                    await SesCalat("chess_checkmate");
+
+                    //  GELİŞTİRİLMİŞ ŞAH-MAT MESAJI
+                    await DisplayAlert("🏆 OYUN BİTTİ - ŞAH MAT!",
+                        $"🔥 {kaybeden} şah mat oldu!\n" +
+                        $"👑 Kazanan: {kazanan}\n\n" +
+                        $"🎯 {kaybeden} şahının kaçacak yeri kalmadı!\n" +
+                        $"⚔️ Hiçbir hamle şahı kurtaramaz!",
+                        "🎉 Tebrikler!");
+
                     return;
                 }
 
-                // ✅ 2. MANUEL ŞAH KONTROLÜ (Şahlar tahtada var mı?)
+                //  MANUEL ŞAH KONTROLÜ (Şahlar tahtada var mı?)
                 var beyazSah = _tahtaTaslari.FirstOrDefault(t => t.TasSimgesi == "♔" && t.AktifMi);
                 var siyahSah = _tahtaTaslari.FirstOrDefault(t => t.TasSimgesi == "♚" && t.AktifMi);
 
                 if (beyazSah == null)
                 {
+                    _oyunBasladi = false;
                     TimerDurdur();
+                    OyunGecmisineEkle("Siyah");
+                    await SesCalat("chess_checkmate");
                     await DisplayAlert("🏆 OYUN BİTTİ",
-                        "Şah mat oldu! Kazanan: Siyah",
+                        "Beyaz şah alındı! Kazanan: Siyah",
                         "Tamam");
                     return;
                 }
 
                 if (siyahSah == null)
                 {
+                    _oyunBasladi = false;
                     TimerDurdur();
+                    OyunGecmisineEkle("Beyaz");
+                    await SesCalat("chess_checkmate");
                     await DisplayAlert("🏆 OYUN BİTTİ",
-                        "Şah mat oldu! Kazanan: Beyaz",
+                        "Siyah şah alındı! Kazanan: Beyaz",
                         "Tamam");
                     return;
                 }
 
-                // ✅ 3. SADECE TEHDİT UYARISI (Oyun devam eder)
-                bool aktifOyuncuSahTehdit = (_beyazSirasi && durum.BeyazSahTehditAltinda) ||
-                                           (!_beyazSirasi && durum.SiyahSahTehditAltinda);
-
-                if (aktifOyuncuSahTehdit)
+                // ŞAH TEHDİT UYARISI
+                if (_oyunBasladi)
                 {
-                    await DisplayAlert("⚠️ DİKKAT",
-                        "Şahınız tehdit altında olabilir, lütfen kontrol ediniz.",
-                        "Anladım");
+                    if (_beyazSirasi && durum.BeyazSahTehditAltinda)
+                    {
+                        await SesCalat("chess_check");
+                        await DisplayAlert("⚠️ DİKKAT - BEYAZ ŞAH",
+                            "🔥 Beyaz şahınız tehdit altında!\n" +
+                            "🛡️ Şahınızı koruyun veya kaçırın!",
+                            "Anladım");
+                    }
+                    else if (!_beyazSirasi && durum.SiyahSahTehditAltinda)
+                    {
+                        await SesCalat("chess_check");
+                        await DisplayAlert("⚠️ DİKKAT - SİYAH ŞAH",
+                            "🔥 Siyah şahınız tehdit altında!\n" +
+                            "🛡️ Şahınızı koruyun veya kaçırın!",
+                            "Anladım");
+                    }
                 }
             }
         }
@@ -844,5 +959,450 @@ public partial class GamePage : ContentPage
             System.Diagnostics.Debug.WriteLine($"Şah kontrolü hatası: {ex.Message}");
         }
     }
+    // 
+    private async Task SesCalat(string sesAdi)
+    {
+        try
+        {
+            // CheckBox kontrolü
+            if (SesCheckBox?.IsChecked != true) return; //Ses kapalı veya CheckBox null, çalma
+
+            // Gelişmiş beep sistemini çağır
+            await GelismisBeep(sesAdi);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Ses çalma hatası: {ex.Message}");
+        }
+    }
+
+    //  Gelişmiş beep sistemi
+    private async Task GelismisBeep(string sesType)
+    {
+        await Task.Run(() =>
+        {
+            try
+            {
+                switch (sesType)
+                {
+                    case "chess_move":
+                        // Chess.com tarzı "tick" sesi
+                        System.Console.Beep(800, 120);
+                        break;
+
+                    case "chess_capture":
+                        // "Thump" sesi (taş alma)
+                        System.Console.Beep(400, 100);
+                        Thread.Sleep(30);
+                        System.Console.Beep(900, 150);
+                        break;
+
+                    case "chess_check":
+                        // "Ding" sesi (şah)
+                        System.Console.Beep(1200, 200);
+                        Thread.Sleep(50);
+                        System.Console.Beep(1000, 100);
+                        break;
+
+                    case "chess_checkmate":
+                        // "Victory" sesi
+                        System.Console.Beep(600, 200);
+                        Thread.Sleep(100);
+                        System.Console.Beep(800, 200);
+                        Thread.Sleep(100);
+                        System.Console.Beep(1000, 300);
+                        break;
+
+                    case "invalid_selection":
+                        // Geçersiz seçim sesi
+                        System.Console.Beep(300, 200);
+                        break;
+                    case "chess_castling":
+                        // Rok sesi - çifte beep
+                        System.Console.Beep(600, 150);
+                        Thread.Sleep(50);
+                        System.Console.Beep(800, 150);
+                        break;
+
+                    default:
+                        System.Console.Beep(800, 200);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Beep hatası: {ex.Message}");
+            }
+        }).ConfigureAwait(false);
+    }
+    private async void OnSesAyariDegisti(object sender, CheckedChangedEventArgs e)
+    {
+        _sesAktif = e.Value;
+
+        if (e.Value)
+        {
+            // Ses açıldı - test sesi çal
+            await SesCalat("chess_move");
+            await DisplayAlert("Ses Ayarları", "Ses efektleri açıldı! 🔊", "Tamam");
+        }
+        else
+        {
+            await DisplayAlert("Ses Ayarları", "Ses efektleri kapatıldı. 🔇", "Tamam");
+        }
+    }
+    // 
+    private async Task<bool> SahHamleGuvenligi(int sahX, int sahY, int hedefX, int hedefY, Renk sahRengi)
+    {
+        try
+        {
+            // Geçici olarak şahı yeni pozisyona taşı (sadece memory'de)
+            var geciciTahtaTaslari = new List<Tas>(_tahtaTaslari);
+
+            // Şahı hedef pozisyona taşı
+            var sah = geciciTahtaTaslari.FirstOrDefault(t => t.X == sahX && t.Y == sahY && t.AktifMi);
+            if (sah != null)
+            {
+                sah.X = hedefX;
+                sah.Y = hedefY;
+            }
+
+            // Hedef pozisyonda düşman taş varsa onu kaldır
+            var hedefTas = geciciTahtaTaslari.FirstOrDefault(t => t.X == hedefX && t.Y == hedefY && t.AktifMi && t.renk != sahRengi);
+            if (hedefTas != null)
+            {
+                hedefTas.AktifMi = false; // Geçici olarak pasif yap
+            }
+
+            // Bu pozisyonda şah tehdit altında mı kontrol et
+            bool tehditAltinda = SahTehditKontrolu(hedefX, hedefY, sahRengi, geciciTahtaTaslari);
+
+            // Geçici değişiklikleri geri al
+            if (sah != null)
+            {
+                sah.X = sahX;
+                sah.Y = sahY;
+            }
+            if (hedefTas != null)
+            {
+                hedefTas.AktifMi = true;
+            }
+
+            return !tehditAltinda; // Tehdit altında değilse güvenli
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Şah güvenlik kontrolü hatası: {ex.Message}");
+            return false; // Hata durumunda güvensiz sayarak hamleyi engelle
+        }
+    }
+
+    // 
+    private bool SahTehditKontrolu(int sahX, int sahY, Renk sahRengi, List<Tas> tahtaTaslari)
+    {
+        // Düşman taşlarını kontrol et
+        var dusmanTaslari = tahtaTaslari.Where(t => t.AktifMi && t.renk != sahRengi).ToList();
+
+        foreach (var dusmanTas in dusmanTaslari)
+        {
+            // Bu düşman taş, şahın olacağı pozisyonu vurabilir mi?
+            if (TasVurabilirMi(dusmanTas, sahX, sahY, tahtaTaslari))
+            {
+                return true; // Tehdit var!
+            }
+        }
+
+        return false; // Güvenli
+    }
+
+    // Taş vurma kabiliyeti kontrolü
+    private bool TasVurabilirMi(Tas tas, int hedefX, int hedefY, List<Tas> tahtaTaslari)
+    {
+        // Taş türüne göre hareket kontrolü
+        switch (tas.TasSimgesi)
+        {
+            case "♟":
+            case "♙": // Piyon
+                return PiyonVurabilirMi(tas, hedefX, hedefY);
+
+            case "♜":
+            case "♖": // Kale
+                return KaleVurabilirMi(tas, hedefX, hedefY, tahtaTaslari);
+
+            case "♞":
+            case "♘": // At
+                return AtVurabilirMi(tas, hedefX, hedefY);
+
+            case "♝":
+            case "♗": // Fil
+                return FilVurabilirMi(tas, hedefX, hedefY, tahtaTaslari);
+
+            case "♛":
+            case "♕": // Vezir
+                return VezirVurabilirMi(tas, hedefX, hedefY, tahtaTaslari);
+
+            case "♚":
+            case "♔": // Şah
+                return SahVurabilirMi(tas, hedefX, hedefY);
+
+            default:
+                return false;
+        }
+    }
+
+    // 
+    private bool PiyonVurabilirMi(Tas piyon, int hedefX, int hedefY)
+    {
+        int deltaX = hedefX - piyon.X;
+        int deltaY = hedefY - piyon.Y;
+
+        // Siyah piyon: sadece aşağı (deltaY = +1), Beyaz piyon: sadece yukarı (deltaY = -1)
+        bool dogruYon = (piyon.renk == Renk.Siyah && deltaY == 1) || (piyon.renk == Renk.Beyaz && deltaY == -1);
+
+        // Piyon sadece çapraz saldırır
+        return dogruYon && Math.Abs(deltaX) == 1;
+    }
+
+    private bool KaleVurabilirMi(Tas kale, int hedefX, int hedefY, List<Tas> tahtaTaslari)
+    {
+        // Kale: düz çizgiler (yatay veya dikey)
+        if (kale.X != hedefX && kale.Y != hedefY) return false;
+
+        // Yol temiz mi kontrol et
+        return YolTemizMi(kale.X, kale.Y, hedefX, hedefY, tahtaTaslari);
+    }
+
+    private bool FilVurabilirMi(Tas fil, int hedefX, int hedefY, List<Tas> tahtaTaslari)
+    {
+        // Fil: çapraz çizgiler
+        int deltaX = Math.Abs(hedefX - fil.X);
+        int deltaY = Math.Abs(hedefY - fil.Y);
+
+        if (deltaX != deltaY) return false; // Çapraz değil
+
+        // Yol temiz mi kontrol et
+        return YolTemizMi(fil.X, fil.Y, hedefX, hedefY, tahtaTaslari);
+    }
+
+    private bool AtVurabilirMi(Tas at, int hedefX, int hedefY)
+    {
+        // At: L şeklinde (2+1 veya 1+2)
+        int deltaX = Math.Abs(hedefX - at.X);
+        int deltaY = Math.Abs(hedefY - at.Y);
+
+        return (deltaX == 2 && deltaY == 1) || (deltaX == 1 && deltaY == 2);
+    }
+
+    private bool VezirVurabilirMi(Tas vezir, int hedefX, int hedefY, List<Tas> tahtaTaslari)
+    {
+        // Vezir: kale + fil hareketleri
+        return KaleVurabilirMi(vezir, hedefX, hedefY, tahtaTaslari) ||
+               FilVurabilirMi(vezir, hedefX, hedefY, tahtaTaslari);
+    }
+
+    private bool SahVurabilirMi(Tas sah, int hedefX, int hedefY)
+    {
+        // Şah: 1 kare her yöne
+        int deltaX = Math.Abs(hedefX - sah.X);
+        int deltaY = Math.Abs(hedefY - sah.Y);
+
+        return deltaX <= 1 && deltaY <= 1 && (deltaX != 0 || deltaY != 0);
+    }
+
+    // 
+    private bool YolTemizMi(int baslangicX, int baslangicY, int hedefX, int hedefY, List<Tas> tahtaTaslari)
+    {
+        int deltaX = hedefX - baslangicX;
+        int deltaY = hedefY - baslangicY;
+
+        // Yön hesapla
+        int adimX = deltaX == 0 ? 0 : (deltaX > 0 ? 1 : -1);
+        int adimY = deltaY == 0 ? 0 : (deltaY > 0 ? 1 : -1);
+
+        // Yol boyunca taş var mı kontrol et
+        int x = baslangicX + adimX;
+        int y = baslangicY + adimY;
+
+        while (x != hedefX || y != hedefY)
+        {
+            // Bu pozisyonda taş var mı?
+            if (tahtaTaslari.Any(t => t.X == x && t.Y == y && t.AktifMi))
+            {
+                return false; // Yol kapalı
+            }
+
+            x += adimX;
+            y += adimY;
+        }
+
+        return true; // Yol temiz
+    }
+    //Piyon terfi seçim ekranı
+    private async Task<TasTuru?> PiyonTerfiSecimi()
+    {
+        var secim = await DisplayActionSheet(
+            "🏆 PİYON TERFİ",
+            "İptal",
+            null,
+            "♕ Vezir (En Güçlü)",
+            "♖ Kale (Güçlü)",
+            "♗ Fil (Çapraz)",
+            "♘ At (L Şekli)"
+        );
+
+        return secim switch
+        {
+            "♕ Vezir (En Güçlü)" => TasTuru.Vezir,
+            "♖ Kale (Güçlü)" => TasTuru.Kale,
+            "♗ Fil (Çapraz)" => TasTuru.Fil,
+            "♘ At (L Şekli)" => TasTuru.At,
+            _ => null // İptal
+        };
+    }
+
+    //   Taş türü isimlerini görüntüle
+    private string TasTuruDisplayAdi(TasTuru tur)
+    {
+        return tur switch
+        {
+            TasTuru.Vezir => "Vezir",
+            TasTuru.Kale => "Kale",
+            TasTuru.Fil => "Fil",
+            TasTuru.At => "At",
+            _ => "Bilinmeyen"
+        };
+    }
+    // GamePage.xaml.cs'ye ekle
+    private void TemaPicker_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        var picker = (Picker)sender;
+        string secilenTema = picker.Items[picker.SelectedIndex];
+
+        // Tema değiştirme (basit bir örnek)
+        switch (secilenTema)
+        {
+            case "Klasik":
+                this.BackgroundColor = Colors.White;
+                break;
+            case "Modern":
+                this.BackgroundColor = Colors.Gray;
+                break;
+            case "Renkli":
+                this.BackgroundColor = Colors.LightBlue;
+                break;
+        }
+    }
+    //  Koordinat labelları oluşturma
+    private void KoordinatlariOlustur()
+    {
+        // ÜST KOORDINATLAR (A-H)
+        for (int i = 0; i < 8; i++)
+        {
+            var label = new Label
+            {
+                Text = _tahtaDonmus ? _sutunHarfleri[7 - i] : _sutunHarfleri[i],
+                FontSize = 8,  // 
+                FontAttributes = FontAttributes.Bold,
+                TextColor = Colors.White,
+                HorizontalOptions = LayoutOptions.Center,
+                VerticalOptions = LayoutOptions.Center,
+                BackgroundColor = Color.FromRgb(139, 69, 19), // SaddleBrown
+                Padding = new Thickness(0), 
+                Margin = new Thickness(0)   
+            };
+
+            Grid.SetColumn(label, i);
+            TopCoordinatesGrid.Children.Add(label);
+            _ustKoordinatlar[i] = label;
+        }
+
+        // SOL KOORDINATLAR (1-8)
+        for (int i = 0; i < 8; i++)
+        {
+            var label = new Label
+            {
+                Text = _tahtaDonmus ? _satirNumaralari[7 - i] : _satirNumaralari[i],
+                FontSize = 8,  //  Font küçültüldü
+                FontAttributes = FontAttributes.Bold,
+                TextColor = Colors.White,
+                HorizontalOptions = LayoutOptions.Center,
+                VerticalOptions = LayoutOptions.Center,
+                BackgroundColor = Color.FromRgb(139, 69, 19), // SaddleBrown
+                Rotation = 0,
+                Padding = new Thickness(0), //  
+                Margin = new Thickness(0)   //  
+            };
+
+            Grid.SetRow(label, i);
+            LeftCoordinatesGrid.Children.Add(label);
+            _solKoordinatlar[i] = label;
+        }
+    }
+
+    //  Koordinatları güncelleme
+    private void KoordinatlariGuncelle()
+    {
+        // Üst koordinatları güncelle (A-H)
+        for (int i = 0; i < 8; i++)
+        {
+            if (_ustKoordinatlar[i] != null)
+            {
+                _ustKoordinatlar[i].Text = _tahtaDonmus ? _sutunHarfleri[7 - i] : _sutunHarfleri[i];
+            }
+        }
+
+        // Sol koordinatları güncelle (1-8)
+        for (int i = 0; i < 8; i++)
+        {
+            if (_solKoordinatlar[i] != null)
+            {
+                _solKoordinatlar[i].Text = _tahtaDonmus ? _satirNumaralari[7 - i] : _satirNumaralari[i];
+            }
+        }
+    }
+
+    // Kare adını getir
+    private string KareAdiniGetir(int sutun, int satir)
+    {
+        if (_tahtaDonmus)
+        {
+            string harf = _sutunHarfleri[7 - sutun];
+            string numara = _satirNumaralari[7 - satir];
+            return $"{harf}{numara}";
+        }
+        else
+        {
+            string harf = _sutunHarfleri[sutun];
+            string numara = _satirNumaralari[satir];
+            return $"{harf}{numara}";
+        }
+    }
+
+    //  Tahta döndürme butonu
+    private async void TahtaDondurBtn_Clicked(object sender, EventArgs e)
+    {
+        await TahtayiDondur();
+    }
+
+    //  Tahta döndürme metodu
+    private async Task TahtayiDondur()
+    {
+        try
+        {
+            _tahtaDonmus = !_tahtaDonmus;
+            KoordinatlariGuncelle();
+            TahtayiGuncelle();
+
+            await DisplayAlert("Tahta Döndürüldü",
+                $"Tahta {(_tahtaDonmus ? "siyah" : "beyaz")} oyuncu perspektifine döndürüldü.",
+                "Tamam");
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Hata", $"Tahta döndürülürken hata: {ex.Message}", "Tamam");
+        }
+    }
+
+
+
 
 }

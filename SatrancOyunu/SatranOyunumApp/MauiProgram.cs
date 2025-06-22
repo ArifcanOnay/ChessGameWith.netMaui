@@ -20,11 +20,11 @@ namespace SatranOyunumApp
 
 
 
-            // ✅ Service'leri DI Container'a kaydet
+            //  Service'leri DI Container'a kaydet
             builder.Services.AddHttpClient();
-            builder.Services.AddScoped<ISatrancApiService, SatrancApiService>();
+           builder.Services.AddScoped<ISatrancApiService, SatrancApiService>();
 
-            // ✅ Page'leri kaydet
+            //  Page'leri kaydet
             builder.Services.AddTransient<GamePage>();
             builder.Services.AddTransient<LoginPage>();
             builder.Services.AddTransient<KullanıcıKaydi>();

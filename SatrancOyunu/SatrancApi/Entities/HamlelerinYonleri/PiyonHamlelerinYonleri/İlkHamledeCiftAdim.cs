@@ -8,6 +8,10 @@ namespace SatrancAPI.Entities.HamlelerinYonleri.PiyonHamlelerinYonleri
         {
             int x = tas.X;
             int y = tas.Y;
+            // DÜZELTME: İlk hamle kontrolü ekle
+            if (!tas.HicHareketEtmediMi)
+                return false; // Daha önce hareket ettiyse çift adım atamaz
+
 
             if (tas.renk == Renk.Beyaz && x == 6)
             {
@@ -25,6 +29,9 @@ namespace SatrancAPI.Entities.HamlelerinYonleri.PiyonHamlelerinYonleri
             List<(int x, int y)> hamleler = new List<(int x, int y)>();
             int x = tas.X;
             int y = tas.Y;
+            //  İlk hamle kontrolü ekle
+            if (!tas.HicHareketEtmediMi)
+                return hamleler; // Boş liste döndür
 
             if (tas.renk == Renk.Beyaz && x == 6 && tahta[5, y] == null && tahta[4, y] == null)
             {

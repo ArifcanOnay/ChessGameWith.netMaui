@@ -4,9 +4,9 @@ namespace SatranOyunumApp.Views;
 
 public partial class SifreDegistirPage : ContentPage
 {
-    private readonly ISatrancApiService _apiService; // ApiService yerine SatrancApiService
+    private readonly ISatrancApiService _apiService; 
 
-    // ✅ Constructor Injection - Manuel HttpClient oluşturma KALDIRILDI
+    
     public SifreDegistirPage(ISatrancApiService apiService)
     {
         InitializeComponent();
@@ -17,7 +17,7 @@ public partial class SifreDegistirPage : ContentPage
     {
         try
         {
-            // Validasyon kontrolleri
+            // Validasyon kontrolleri (aynı kalacak)
             if (string.IsNullOrWhiteSpace(EmailEntry.Text))
             {
                 MesajGoster("Email adresinizi girin", false);
@@ -73,10 +73,18 @@ public partial class SifreDegistirPage : ContentPage
 
             if (sonuc)
             {
-                MesajGoster("✅ Şifreniz başarıyla güncellendi!", true);
+                //  Şifre değiştikten sonra güvenlik için çıkış yap
 
-                // 2 saniye bekle sonra login sayfasına dön
-                await Task.Delay(2000);
+                // 1. Kullanıcı bilgilerini temizle (oturumu kapat)
+                Preferences.Remove("KullaniciAdi");
+                Preferences.Remove("KullaniciEmail");
+
+                // 2. Başarı mesajı göster
+                await DisplayAlert("✅ Başarılı",
+                    "Şifreniz başarıyla güncellendi!\n\nGüvenlik nedeniyle oturumunuz kapatılmıştır.\nLütfen yeni şifrenizle tekrar giriş yapın.",
+                    "Tamam");
+
+                // 3. Login sayfasına yönlendir
                 await Shell.Current.GoToAsync("//LoginPage");
             }
             else

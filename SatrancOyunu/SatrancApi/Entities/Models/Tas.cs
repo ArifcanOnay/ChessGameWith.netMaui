@@ -1,6 +1,8 @@
-﻿namespace SatrancAPI.Entities.Models
+﻿using SatrancApi.Entities.Models;
+
+namespace SatrancAPI.Entities.Models
 {
-    public class Tas
+    public class Tas:BaseEntitiy
     {
         public Guid TasId { get; set; }
         public Guid OyunId { get; set; }
@@ -11,7 +13,9 @@
 
         public int Y { get; set; }
         public bool AktifMi { get; set; }
-   
+        public string TasSimgesi { get; set; } = "";
+
+
         public bool HicHareketEtmediMi { get; set; } = true; // Rök ve en passant için
         public DateTime? SonHareketTarihi { get; set; }
         public int? EnPassantTuru { get; set; } // Hangi turda en passant oldu

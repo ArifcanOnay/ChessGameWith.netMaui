@@ -40,7 +40,7 @@ public partial class LoginPage : ContentPage
             {
                 if (loginSonucu.Basarili)
                 {
-                    // *** YENÝ: Baþarýlý giriþten sonra hoþgeldin ekranýný göster ***
+                    //  Baþarýlý giriþten sonra hoþgeldin ekranýný göster 
                     HosgeldinEkraniniGoster(loginSonucu);
                 }
 

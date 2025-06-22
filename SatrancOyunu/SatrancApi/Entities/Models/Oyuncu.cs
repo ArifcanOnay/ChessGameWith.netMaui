@@ -1,6 +1,8 @@
-﻿namespace SatrancAPI.Entities.Models
+﻿using SatrancApi.Entities.Models;
+
+namespace SatrancAPI.Entities.Models
 {
-    public class Oyuncu
+    public class Oyuncu:BaseEntitiy
     {
         public Guid Id { get; set; }
         public string ?isim { get; set; }

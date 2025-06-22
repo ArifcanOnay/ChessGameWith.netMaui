@@ -10,14 +10,14 @@ namespace SatrancAPI.Entities.HamlelerinYonleri.PiyonHamlelerinYonleri
             int x = tas.X;
             int y = tas.Y;
 
-            // Beyaz piyon için: Y ekseninde 7. sıraya ulaşması gerekir
+            
             if (tas.renk == Renk.Beyaz)
             {
-                return y == 6; // Beyaz piyon 6. sırada (y = 6) olmalı
+                return x== 0; 
             }
-            else // Siyah piyon için: Y ekseninde 0. sıraya ulaşması gerekir
+            else 
             {
-                return y == 1; // Siyah piyon 1. sırada (y = 1) olmalı
+                return x== 7; 
             }
         }
 
@@ -29,20 +29,19 @@ namespace SatrancAPI.Entities.HamlelerinYonleri.PiyonHamlelerinYonleri
             int y = tas.Y;
 
             // Beyaz piyonlar için terfi işlemi
-            if (tas.renk == Renk.Beyaz)
+            if (tas.renk == Renk.Beyaz && x==1)
             {
-                // Beyaz piyon 7. sıraya ulaşırsa (terfi alanı)
-                if (y == 6)
+                if (tahta[0, y] == null)
                 {
-                    hamleler.Add((x, 7)); // Terfi alanına gidebilir
+                    hamleler.Add((0, y)); // Terfi alanına gidebilir
                 }
             }
-            else // Siyah piyonlar için terfi işlemi
+            else if(tas.renk==Renk.Siyah && x==6) // Siyah piyonlar için terfi işlemi
             {
-                // Siyah piyon 0. sıraya ulaşırsa (terfi alanı)
-                if (y == 1)
+                // İlerideki kare boşsa terfi edilebilir
+                if (tahta[7, y] == null)
                 {
-                    hamleler.Add((x, 0)); // Terfi alanına gidebilir
+                    hamleler.Add((7, y)); // Terfi alanına gidebilir
                 }
             }
 
