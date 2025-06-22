@@ -54,7 +54,7 @@ dist/
 # MAUI/Android/iOS Build directories
 bin/
 obj/
-platforms/
+# platforms/ - Platform folders should be included for MAUI projects
 www/
 
 # Visual Studio for Mac

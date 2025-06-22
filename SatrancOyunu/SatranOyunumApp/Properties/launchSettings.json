@@ -1,6 +1,11 @@
 {
   "profiles": {
     "Windows Machine": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "nativeDebugging": false
+    },
+    "Windows Package": {
       "commandName": "MsixPackage",
       "nativeDebugging": false
     }
