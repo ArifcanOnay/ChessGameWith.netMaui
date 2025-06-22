@@ -1,7 +1,7 @@
 ﻿using Android.App;
 using Android.Runtime;
 
-namespace TempMauiProject;
+namespace SatranOyunumApp;
 
 [Application]
 public class MainApplication : MauiApplication

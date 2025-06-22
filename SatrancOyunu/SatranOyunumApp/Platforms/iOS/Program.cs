@@ -1,7 +1,7 @@
 ﻿using ObjCRuntime;
 using UIKit;
 
-namespace TempMauiProject;
+namespace SatranOyunumApp;
 
 public class Program
 {
