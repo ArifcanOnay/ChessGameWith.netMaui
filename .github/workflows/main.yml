@@ -1,0 +1,102 @@
+name: CI/CD Pipeline Test
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Manuel çalıştırma için
+
+jobs:
+  # BAŞARILI BUILD
+  build-success:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Environment
+      run: |
+        echo "Building project..."
+        echo "Environment setup complete"
+    
+    - name: Run Tests
+      run: |
+        echo "Running tests..."
+        echo "All tests passed ✓"
+    
+    - name: Build Application
+      run: |
+        echo "Building application..."
+        echo "Build successful ✓"
+
+  # BAŞARISIZ BUILD (Kasıtlı)
+  build-fail-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Environment
+      run: echo "Setting up environment..."
+    
+    - name: Run Tests That Will Fail
+      run: |
+        echo "Running tests..."
+        exit 1  # Bu testin başarısız olmasını sağlar
+    
+    - name: This step won't run
+      run: echo "This won't execute"
+
+  # BAŞARILI TEST JOB
+  test-integration:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Integration Tests
+      run: |
+        echo "Running integration tests..."
+        sleep 2
+        echo "Integration tests passed ✓"
+
+  # BAŞARISIZ DEPLOYMENT (Kasıtlı)
+  deploy-fail:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Prepare Deployment
+      run: echo "Preparing deployment..."
+    
+    - name: Deploy (Will Fail)
+      run: |
+        echo "Deploying application..."
+        echo "ERROR: Deployment failed!"
+        exit 1
+
+  # BAŞARILI LINTING
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Code Linting
+      run: |
+        echo "Running code quality checks..."
+        echo "Code quality: PASSED ✓"
+    
+    - name: Security Scan
+      run: |
+        echo "Running security scan..."
+        echo "No vulnerabilities found ✓"
+
+  # BAŞARISIZ SYNTAX CHECK (Kasıtlı)
+  syntax-check-fail:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Syntax Check
+      run: |
+        echo "Checking syntax..."
+        echo "ERROR: Syntax error found!"
+        exit 1
